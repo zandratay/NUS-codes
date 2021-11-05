@@ -65,43 +65,15 @@ function combine(xss) {
 // Question 1D
 ////////////////////////////////////////////////////////////
 
-// put the first n elements of xs into a list
-function take(xs, n) {
-    // YOUR SOLUTION HERE
-    function take_helper(list, first_value, end_value) {
-        return first_value === end_value
-               ? null
-               : pair(list_ref(list, first_value), take_helper(xs, first_value + 1, end_value));
-    }
-    return take_helper(xs, 0, n);
-}
-
-// drop the first n elements from list, return rest
-function drop(xs, n) {
-    // YOUR SOLUTION HERE
-    function drop_helper(list, first_value, end_value) {
-        return first_value === end_value
-               ? null
-               : pair(list_ref(list, first_value), drop_helper(xs, first_value + 1, end_value));
-    }
-    return drop_helper(xs, n, length(xs));
-}
-
 function oxoguanine_repair(xs) {
 
     // WRITE HERE.
-    if (is_null(xs)) {
-        return null;
-    } else {
-        /*for (let i = 0; i < length(xs); i = i + 1) {
-            if (list_ref(xs, i) === "8") {
-                return append(take(xs, i - 1), pair("C", drop(xs, i)));
-            }
-        }*/
-    }
-
+    return is_null(xs) 
+           ? null
+           : head(xs) === "8"
+           ? pair("G", oxoguanine_repair(tail(xs)))
+           : pair(head(xs), oxoguanine_repair(tail(xs)));
 }
-
 
 
 ////////////////////////////////////////////////////////////

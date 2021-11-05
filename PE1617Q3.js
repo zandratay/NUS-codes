@@ -96,9 +96,7 @@ function evaluate_BAE(bae_list) {
 ////////////////////////////////////////////////////////////
 // Question 3D
 ////////////////////////////////////////////////////////////
-// put the first n elements of xs into a list
 function take(xs, n) {
-    // YOUR SOLUTION HERE
     function take_helper(list, first_value, end_value) {
         return first_value === end_value
                ? null
@@ -107,9 +105,7 @@ function take(xs, n) {
     return take_helper(xs, 0, n);
 }
 
-// drop the first n elements from list, return rest
 function drop(xs, n) {
-    // YOUR SOLUTION HERE
     function drop_helper(list, first_value, end_value) {
         return first_value === end_value
                ? null
@@ -122,12 +118,13 @@ function check_parentheses(paren_list) {
 
     // WRITE HERE.
     if (is_null(paren_list)) {
-        return null;
+        return true;
     } else if (length(paren_list) % 2 !== 0) {
         return false;
     } else {
-        //const paren_list = list("(", "(", ")", ")", ")", "(", "(", ")");
+        /*const paren_list = list("(", "(", ")", ")", ")", "(", "(", ")");*/
         const len = length(paren_list);
+        
         const mid = length(paren_list) / 2;
         const lhs = take(paren_list, mid);
         const rhs = drop(paren_list, mid);
@@ -138,7 +135,10 @@ function check_parentheses(paren_list) {
         
         /*display(rhs);
         display(check_rhs);
+        display(member('false', check_rhs));
         display(right);*/
+        
+        
         
         if (length(lhs) === length(rhs) && left === 0 && right === 0) {
             return true;

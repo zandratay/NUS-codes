@@ -1,3 +1,5 @@
+// complete solutions!
+
 // Instructions for students who are using this for practice:
 //
 // (1) Copy and paste this entire file into the editor of Source Academy
@@ -13,12 +15,20 @@
 function all_different(nums) {
 
     // WRITE HERE.
-    function helper(i, xs) {
-        if (is_null(xs)) {
-            return true;
-        }
-    }
-    return helper(0, nums);
+    function remove_dups(xs) {
+            return is_null(xs)
+                   ? null
+                   : pair(head(xs), remove_dups(filter(x => x !== head(xs), xs)));
+            }
+    /*const x = list(2, 6, 1, 7, 6, 4, 3);
+    display(remove_dups(x));*/
+    
+    let unique_list = remove_dups(nums);
+    let unique_length = length(unique_list);
+    let og_length = length(nums);
+    return og_length === unique_length
+           ? true 
+           : false;
 }
 
 
@@ -46,16 +56,18 @@ function is_valid_toto_set(nums, n, min, max) {
     const rev = reverse(sorted);
     if (is_null(nums)) {
         return null;
-    } else if (length(sorted) === n && head(sorted) === min && head(rev) === max /*&& all_different(nums)*/) {
+    } else if (length(sorted) === n && head(sorted) === min && head(rev) === max && all_different(nums)) {
         return true;
     } else {
         return false;
     }
-    
-
 }
 
-
+const nums = list(25, 13, 8, 14, 30, 3, 8);
+const n = 7;
+const min = 3;
+const max = 30;
+display(is_valid_toto_set(nums, n, min, max));
 
 ////////////////////////////////////////////////////////////
 // Question 2C
@@ -70,6 +82,14 @@ function num_of_matches(numsA, numsB) {
     if (is_null(numsA) || is_null(numsB)) {
         return 0;
     } else {
+        function remove_dups(xs) {
+            return is_null(xs)
+                   ? null
+                   : pair(head(xs), remove_dups(filter(x => x !== head(xs), xs)));
+            }
+            const unique_list = remove_dups(combined);
+            const difference = length(combined) - length(unique_list);
+            return difference;
         /*for (let i = 0; i < length(sorted_nums); i = i + 1) {
             if (list_ref(sorted_nums, i) === list_ref(sorted_nums, i + 1)) {
                 counter = counter + 1; 
@@ -94,19 +114,23 @@ function check_winning_group(bet_nums, draw_nums, extra_num) {
         return null;
     } else if (num_of_matches(bet_nums, draw_nums) === len) {
         return 1;
-    } else if (num_of_matches(bet_nums, draw_nums) === len - 1) {
-        return 3;
-    } else if (num_of_matches(bet_nums, draw_nums) === len - 2) {
-        return 5;
     } else if (num_of_matches(bet_nums, draw_nums) === len - 1 && length(extra) !== 0) {
         return 2;
     } else if (num_of_matches(bet_nums, draw_nums) === len - 2 && length(extra) !== 0) {
         return 4;
+    } else if (num_of_matches(bet_nums, draw_nums) === len - 1) {
+        return 3;
+    } else if (num_of_matches(bet_nums, draw_nums) === len - 2) {
+        return 5;
     } else {
         return 0;
     }
 }
 
+const bet_nums = list(40, 30, 1, 49, 27, 15);
+const draw_nums = list(23, 1, 30, 15, 40, 49);
+const extra_num = 27;
+display(check_winning_group(bet_nums, draw_nums, extra_num));
 
 
 ////////////////////////////////////////////////////////////
@@ -121,7 +145,7 @@ function check_winning_group(bet_nums, draw_nums, extra_num) {
 // in the actual Practical Assessment.
 //===========================================================
 function assert(f, test_name, fnames) {
-    display(test_name + ": " + (f() ? "PASS" : "FAIL"));
+    display(test_name + ": " + (f() ? "PASS" : "FAIL <<< "));
 }
 //===========================================================
 

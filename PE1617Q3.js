@@ -29,7 +29,8 @@ function evaluate_BAE_tree(bae_tree) {
             return left * right;
         } else if (op === "/") {
             return left / right;
-        } else {
+        } 
+    } else if (is_list(head(bae_tree)) || is_list(list_ref(bae_tree, 2))) {
             const left = head(bae_tree);
             const op = head(tail(bae_tree));
             const right = list_ref(bae_tree, 2);
@@ -43,11 +44,8 @@ function evaluate_BAE_tree(bae_tree) {
                 return evaluate_BAE_tree(left) / evaluate_BAE_tree(right);
             }    
         }
-    
-    }
 
 }
-
 
 ////////////////////////////////////////////////////////////
 // Question 3B

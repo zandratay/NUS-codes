@@ -47,6 +47,7 @@ function evaluate_BAE_tree(bae_tree) {
 
 }
 
+
 ////////////////////////////////////////////////////////////
 // Question 3B
 ////////////////////////////////////////////////////////////
@@ -61,18 +62,22 @@ function build_BAE_tree(bae_list) {
     } else {
         const opening = head(bae_list);
         const rev = reverse(bae_list);
-        const closing = head(tail(bae_list));
+        const closing = head(rev);
         if (opening === "(" && closing === ")") {
             const x = remove(opening, bae_list);
             const y = remove(closing(bae_list));
-            return accumulate(pair, null, y);
+            return list(list(enum_list(list_ref(bae_list, 2), list_ref(bae_list, 4))),
+                             list_ref(bae_list, 5), list_ref(bae_list, 6));
+            // return accumulate(pair, list(null), y);
         } else {
-            return accumulate(pair, null, bae_list);
+             
+            //accumulate(pair, list(null), bae_list);
         }
     }
-
 }
 
+const mom = list("(", "(", 2, "+", 5, ")", "*", 100, ")");
+display(reverse(mom));
 
 ////////////////////////////////////////////////////////////
 // Question 3C

@@ -62,16 +62,13 @@ function build_BAE_tree(bae_list) {
     } else {
         const opening = head(bae_list);
         const rev = reverse(bae_list);
-        const closing = head(rev);
+        const closing = head(bae_list);
         if (opening === "(" && closing === ")") {
             const x = remove(opening, bae_list);
             const y = remove(closing(bae_list));
-            return list(list(enum_list(list_ref(bae_list, 2), list_ref(bae_list, 4))),
-                             list_ref(bae_list, 5), list_ref(bae_list, 6));
-            // return accumulate(pair, list(null), y);
+            return accumulate(pair, list(null), y);
         } else {
-             
-            //accumulate(pair, list(null), bae_list);
+            return accumulate(pair, list(null), bae_list);
         }
     }
 }

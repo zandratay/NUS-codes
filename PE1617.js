@@ -107,14 +107,18 @@ function oxoguanine_repair(xs) {
 ////////////////////////////////////////////////////////////
 // Question 1E
 ////////////////////////////////////////////////////////////
-const c = list("A", "C", "A", "T", "G", "T", "A", "C");
 
 function find_gene_start(xs) {
 
     // WRITE HERE.
     if (is_null(xs)) {
         return null;
-    } 
+    } else {
+        for (let i = gene; !is_null(i); i = tail(i) { 
+            
+            // check if list_ref(i, 0) == A, list_ref(i, 1) == G, ... }
+            
+        }
 
 }
 

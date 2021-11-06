@@ -1,4 +1,6 @@
 // LIST VERSION
+// I AM DEALING WITH LISTS INSTEAD OF ARRAYS IN THIS QUESTION
+
 /*
 House Robber
 You are a professional robber planning to rob houses along a street. 

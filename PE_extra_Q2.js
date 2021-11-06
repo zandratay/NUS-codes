@@ -1,3 +1,4 @@
+// LIST VERSION
 /*
 House Robber
 You are a professional robber planning to rob houses along a street. 
@@ -70,19 +71,8 @@ function robber(xs) {
         } else if (even_sum > odd_sum) {
             return even_sum;
         }
-    }
+  }
 
-
-function rob(arr) {
-    // Your answer here
-    const newlist = array_to_list(arr); // list(1, 2, 3, 1)
-    display(newlist);
-    //return robber(newlist);
-    
-    
-}
-
-rob([1,2,3,1]);
-rob([2,7,9,3,1]);
+// testing
 robber(c);
 

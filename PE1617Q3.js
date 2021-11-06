@@ -51,30 +51,45 @@ function evaluate_BAE_tree(bae_tree) {
 ////////////////////////////////////////////////////////////
 // Question 3B
 ////////////////////////////////////////////////////////////
+// credits to Justin from my studio session!
 
 function build_BAE_tree(bae_list) {
 
     // WRITE HERE.
-    if (is_null(bae_list)) {
-        return null;
-    } else if (length(bae_list) === 1) {
-        return head(bae_list);
-    } else {
-        const opening = head(bae_list);
-        const rev = reverse(bae_list);
-        const closing = head(bae_list);
-        if (opening === "(" && closing === ")") {
-            const x = remove(opening, bae_list);
-            const y = remove(closing(bae_list));
-            return accumulate(pair, list(null), y);
+    function is_operator(o) {
+        return o === "*" || o === "/" || o === "-" || o === "+";
+    } // returns boolean
+    
+    function helper(hold_ls, xs) {
+        // display_list(xs);
+        if (is_null(xs)) {
+            return hold_ls;
+        } else if (length(xs) >=5) {
+            const left_parent = xs;
+            const first = tail(left_parent);
+            const second = tail(first);
+            const third = tail(second);
+            const right_parent = tail(third);
+            const is_left_parent = head(left_parent) === "(";
+            const is_right_parent = head(right_parent) === ")";
+            const bool_first = is_number(head(first)) || is_list(head(first));
+            const bool_second = is_operator(head(second));
+            const bool_third = is_number(head(third)) || is_list(head(third));
+            
+            return is_left_parent && bool_first && bool_second && bool_third && is_right_parent
+                    ? helper(null, append(append(hold_ls, list(list(head(first),head(second),head(third)))), tail(right_parent)))
+                    : helper(append(hold_ls, 
+                                    list(head(left_parent))),
+                             first);
         } else {
-            return accumulate(pair, list(null), bae_list);
+            return length(xs) > 1
+                    ? xs
+                    : head(xs);
         }
     }
+    // display_list(helper(null, bae_list));
+    return(helper(null, bae_list));
 }
-
-const mom = list("(", "(", 2, "+", 5, ")", "*", 100, ")");
-display(reverse(mom));
 
 ////////////////////////////////////////////////////////////
 // Question 3C

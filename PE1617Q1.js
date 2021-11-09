@@ -1,11 +1,4 @@
-// Instructions for students who are using this for practice:
-//
-// (1) Copy and paste this entire file into the editor of Source Academy
-//     Playground at https://sourceacademy.nus.edu.sg/playground
-// (2) Write your solution for each task in the Source Academy Playground.
-// (3) Run the program to test your solution on the given testcases.
-
-
+// qns 1F partially incorrect
 ////////////////////////////////////////////////////////////
 // Question 1A
 ////////////////////////////////////////////////////////////
@@ -13,11 +6,7 @@
 function is_nucleobase(s) {
 
     // WRITE HERE.
-    if (s === "A" || s === "T" || s === "C" || s === "G") {
-        return true;
-    } else {
-        return false;
-    }
+    return s === "A" || s === "T" || s === "C" || s === "G" ? true : false;
 
 }
 
@@ -26,24 +15,18 @@ function is_nucleobase(s) {
 ////////////////////////////////////////////////////////////
 // Question 1B
 ////////////////////////////////////////////////////////////
-function mapper(xs) {
-    return is_null(xs)
-           ? false
-           : map(is_nucleobase, xs);
-}
-display(mapper(list("A", "B", "C")));
-display(member(false, list("A", "T", "C")));
-display(length(null));
+
 function is_dna_strand(xs) {
 
     // WRITE HERE.
-    if (is_null(xs)) {
-        return true;
-    } else if (length(member(false, mapper(xs))) === 0) {
+    const c = map(is_nucleobase, xs);
+    const f = member(false, c);
+    if (length(f) === 0) {
         return true;
     } else {
         return false;
     }
+
 }
 
 
@@ -68,12 +51,10 @@ function combine(xss) {
 function oxoguanine_repair(xs) {
 
     // WRITE HERE.
-    return is_null(xs) 
-           ? null
-           : head(xs) === "8"
-           ? pair("G", oxoguanine_repair(tail(xs)))
-           : pair(head(xs), oxoguanine_repair(tail(xs)));
+    return map(x => x === "8" ? "G" : x, xs);
+
 }
+
 
 
 ////////////////////////////////////////////////////////////
@@ -83,17 +64,25 @@ function oxoguanine_repair(xs) {
 function find_gene_start(xs) {
 
     // WRITE HERE.
-    if (is_null(xs)) {
-        return null;
-    } else {
-        for (let i = gene; !is_null(i); i = tail(i) { 
-            
-            // check if list_ref(i, 0) == A, list_ref(i, 1) == G, ... }
-            
+    // curr refers to the curr position
+    function find_pos(curr, xs) {
+        if (is_null(xs) || curr >= length(xs) - 2) {
+            return null;
+        } else if (list_ref(xs, curr) === "A" && list_ref(xs, curr + 1) === "T" 
+                    && list_ref(xs, curr + 2) === "G") {
+    
+                        let g = null;
+                        for (let i = curr + 3; i < length(xs); i = i + 1) {
+                            g = append(g, list(list_ref(xs, i)));
+                        }
+                        return list(g);
+                        
+        } else {
+            return find_pos(curr + 1, xs);
         }
-
+    }
+    return find_pos(0, xs);
 }
-
 
 
 ////////////////////////////////////////////////////////////
@@ -103,12 +92,45 @@ function find_gene_start(xs) {
 function find_gene_end(xs) {
 
     // WRITE HERE.
-    if (is_null(xs)) {
-        return null;
+    const len = length(xs);
+    function find_pos(curr, xs) {
+        if (is_null(xs) || curr <= 0) {
+            return null;
+        } else if (list_ref(xs, curr) === "T" && list_ref(xs, curr + 1) === "A" 
+                    && list_ref(xs, curr + 2) === "G") {
+    
+                        let g = null;
+                        for (let i = curr - 1; i > 0; i = i - 1) {
+                            g = reverse(append(list(list_ref(xs, i)), g));
+                        }
+                        return list(g);
+                        
+        } else if (list_ref(xs, curr) === "T" && list_ref(xs, curr + 1) === "A" 
+                    && list_ref(xs, curr + 2) === "A") {
+    
+                        let g = null;
+                        for (let i = curr - 1; i > 0; i = i - 1) {
+                            g = reverse(append(list(list_ref(xs, i)), g));
+                        }
+                        return list(g);
+        } else if (list_ref(xs, curr) === "T" && list_ref(xs, curr + 1) === "G" 
+                    && list_ref(xs, curr + 2) === "A") {
+    
+                        let g = null;
+                        for (let i = curr - 1; i > 0; i = i - 1) {
+                            g = reverse(append(list(list_ref(xs, i)), g));
+                        }
+                        return list(g);
+        } else {
+            return find_pos(curr - 1, xs);
+        }
     }
-
+    return find_pos(len - 2, xs);
 }
 
+
+display(find_gene_end(list("A", "T", "A", "C", "T", "A", "G", 
+ "A", "T", "A", "A")));
 
 
 ////////////////////////////////////////////////////////////
@@ -118,12 +140,25 @@ function find_gene_end(xs) {
 function all_genes(xs) {
 
     // WRITE HERE.
-    if (is_null(xs)) {
+    const start = find_gene_start(xs); // returns a list(list())
+    if (is_null(start)) {
         return null;
+    } else {
+        const end = find_gene_end(head(start));
+        if (is_null(end)) {
+            return null;
+        } else {
+            return pair(head(end), all_genes(head(start)));
+        }
     }
+    
 
 }
 
+all_genes(list("T", "A", "T", "G", "C", "A", "T",
+ "A", "A", "G", "T", "A", "G", "A",
+ "T", "G", "A", "T", "G", "A", "T"));
+// returns list(list("C", "A"), list("A"))
 
 
 ////////////////////////////////////////////////////////////
@@ -138,7 +173,7 @@ function all_genes(xs) {
 // in the actual Practical Assessment.
 //===========================================================
 function assert(f, test_name, fnames) {
-    display(test_name + ": " + (f() ? "PASS" : "FAIL"));
+    display(test_name + ": " + (f() ? "PASS" : "FAIL <<< "));
 }
 //===========================================================
 

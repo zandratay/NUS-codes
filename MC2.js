@@ -74,3 +74,29 @@ function m_perm(n, k) {
 m_perm(5, 3); // 60
 
 // 3. environment model
+/*
+diagram presented separately
+environment model replaces the previous substitution model
+
+1. global env contains pre-declared names, functions and primitives.
+2. prog env (functions, constants).
+3. a new frame containing the function parameters extends the current environment 
+    whenever the function is called.
+4. a new frame containing the function body extends the parameters environment
+    if there is a const or function assignment.
+5. no new frame created if there is no const or function declaration.
+6. any variable or function not found in the current environment will be recursively
+    looked up its parent environment.
+    if 
+
+*/
+
+function ff(xx) {
+    function gg(yy) {
+        return xx * yy;
+    }
+    return gg;
+}
+const aa = ff(1)(6);
+const bb = ff(2)(5);
+ff(aa)(bb);

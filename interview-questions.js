@@ -40,3 +40,17 @@ function smallest(A) {
     return accumulate_array((x, y) => x < y ? x : y, A[0], A);
 }
 smallest(arr); // 1
+
+// q3 find all pairs of integer arrays whose sum is equal to a given number?
+
+function find_pairs_equal_to_sum(num) {
+   function helper(num, start) {
+       return num === 0
+              ? pair(0, 0)
+              : list(pair(num, start), helper(num - 1, start + 1));
+   }
+   return helper(num, 0);
+}
+
+find_pairs_equal_to_sum(3); 
+// [[3, 0], [[[2, 1], [[[1, 2], [[0, 0], null]], null]], null]]

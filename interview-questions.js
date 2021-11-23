@@ -1,3 +1,6 @@
+// the following questions were obtained from 
+// https://www.java67.com/2018/05/top-75-programming-interview-questions-answers.html
+
 // q1: finding missing number in a given integer array
 function integers_to_n(n) {
         function rev_integers_to_n(n) {

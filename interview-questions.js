@@ -54,3 +54,22 @@ function find_pairs_equal_to_sum(num) {
 
 find_pairs_equal_to_sum(3); 
 // [[3, 0], [[[2, 1], [[[1, 2], [[0, 0], null]], null]], null]]
+
+// helper functions for dealing with strings
+function list_to_string(xs) {
+    return is_null(xs)
+           ? ""
+           : stringify(head(xs)) + list_to_string(tail(xs));
+}
+list_to_string(list(1, 2, 3));
+
+function string_to_list(s){
+    let counter = 0;
+    let storage = null;
+    while (char_at(s, counter) !== undefined){
+        storage = pair(char_at(s, counter), storage);
+        counter = counter + 1;
+    }
+    return reverse(storage);
+}
+

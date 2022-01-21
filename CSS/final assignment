@@ -1,0 +1,100 @@
+/* the final assignment is a combination of all the assignments from week 1 to 3. */
+body {
+	padding: 10px;
+	margin: 1%;
+}
+
+header {
+	background-image: url("http://intro-webdesign.com/CSS/assignment-2/images/flywheel.jpg");
+	background-size:100%;
+	padding:20px;
+	text-align: center;
+}
+
+h1 {
+	text-align: center;
+	color: #FFFFFF;
+	font-size: 200%;
+	text-transform: uppercase;
+}
+
+h2 {
+	font-weight: bold;
+}
+
+section {
+	font-size: 130%;
+}
+
+table{
+	margin-top: 20px;
+	margin-left: 75px;
+}
+
+table th {
+	color: #FFFFFF;
+	background-color: #98B753;
+	padding: 15px;
+	font-family: sans-serif;
+	border-radius: 5px
+	border: #FFFFFF;
+}
+
+td {
+	padding: 15px;
+	font-family: sans-serif;
+	border-radius: 5px;
+	text-align: center;
+}
+
+tr td: first-child, tr th: first-child {
+	text-align: left;
+}
+
+tr {
+	background-color: #D4E4B0;
+}
+
+tr:hover {
+	opacity: 80%;
+}
+
+nav a{
+	display: inline-block;
+	margin: 2%;
+
+	border-radius: 5px;
+
+	text-decoration: none;
+	padding: 1.5%;
+
+	color: #000000;
+	
+	background-color: rgba(0, 0, 0, 0.2);
+	width:150px;
+	height: 20px;
+}
+
+.active {
+	background-color: #FFFFFF;
+}
+
+.left {
+	background-color: #5E6F18;
+	width: 24%;
+	float:left;
+	
+}
+
+.right {
+	width:74%;
+	display: inline-block;
+	margin: 10px;
+	
+}
+
+.left img {
+	border: solid 3px #000000;
+	width: 80%;
+	margin: 10%;
+}

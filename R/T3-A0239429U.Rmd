@@ -1,0 +1,559 @@
+### Tutorial 3 Part 2
+
+- Dataset required: `Ecommerceshipping.xlsx`
+
+The dataset is from an international ecommerce based company, selling electronic products, that would like to discover key insights from their customer database. There are 10999 observations and 12 variables. Each of the variable (column) is defined as follows: 
+
+- `ID`: ID Number of Customers.
+- `Warehouse_block`: The Company have big Warehouse which is divided in to block such as A,B,C,D,E.
+- `Mode_of_shipment`:The Company Ships the products in multiple way such as Ship, Flight and Road.
+- `Customer_care_calls`: The number of calls made for enquiry of the shipment.
+- `Customer_rating`: The company has rating from every customer. 1 is the lowest (Worst), 5 is the highest (Best).
+- `Cost_of_the_Product`: Cost of the Product in US Dollars.
+- `Prior_purchases`: The Number of Prior Purchase.
+- `Product_importance`: The company has categorized the product in the various parameter such as low, medium, high.
+- `Gender`: Male and Female.
+- `Discount_offered`: Discount offered on that specific product.
+- `Weight_in_gms`: It is the weight in grams.
+- `Reached.on.time_Y.N`: It is the target variable, where 1 Indicates that the product has NOT reached on time and 0 indicates it has reached on time.
+
+```{r q2-read-dataset, echo=TRUE}
+#import dataset into RStudio
+library(readxl)
+library(dplyr)
+library(tidyverse)
+library(knitr)
+library(rpivotTable)
+
+getwd()
+setwd("C:/Users/zandr/OneDrive/Desktop/R")
+ES <- read_excel("Ecommerceshipping.xlsx")
+ES
+```
+
+### Q2.(a) Product Shipment Dashboard (11 marks)
+Develop a dashboard for the company to better understand the profile of products shipped to their customers. The requirements for the Product Shipment Dashboard are as follows: 
+
+- i. To be able to view the frequency distributions for each of the following variables in a chart and table: `Warehouse Block`, `Mode of Shipment`, `Cost of the product`, `Weight in gms`, `Product Importance`, `Discount offered `, `Reached on time`
+- ii. To be able to view the frequency distribution for `Reached on time` across different mode of shipments.
+- iii. To be able to view the frequency distribution for `Reached on time` across different warehouse blocks. 
+- iv. To be able to compare the frequency distribution for `Reached on time` across different mode of shipments and different warehouse blocks in one table. 
+- v. To examine the relationship between Cost of Product and Discount Offered. 
+
+- From the charts in (ii) to (iv), do you see any difference in proportion of shipments being on time across modes of shipments or warehouse blocks?  From chart v, what do you observe? 
+
+- For tutorial discussion and not for submission: Are there any other pairs of variables that might be interesting to compare frequencies for? 
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+
+```{r q2.(a), echo=TRUE}
+# i)
+# `Warehouse Block`
+warehouseBlockFreq <- ES %>% count(Warehouse_block)
+kable(warehouseBlockFreq, caption = "Warehouse Block Frequency")
+
+slice.warehouseBlock <- warehouseBlockFreq$n
+warehouseBlock.piepercent <- 100 * round(warehouseBlockFreq$n / sum(warehouseBlockFreq$n), 2)
+label <- warehouseBlockFreq$Warehouse_block
+label <- paste(label, ",", sep = " ")
+label <- paste(label, warehouseBlock.piepercent)
+label <- paste(label, "%")
+
+pie(slice.warehouseBlock, labels = label, 
+    col = c("blue", "green", "red", "cyan", "orange", "yellow"),
+    radius = 1,
+    main = "Warehouse Blocks")
+
+#`Mode of Shipment`
+shipmentModeFreq <- ES %>% count(Mode_of_Shipment)
+kable(shipmentModeFreq, caption = "Shipment mode Frequency")
+
+slice.shipmentMode <- shipmentModeFreq$n
+shipmentMode.piepercent <- 100 * round(shipmentModeFreq$n / sum(shipmentModeFreq$n), 2)
+label <- shipmentModeFreq$Mode_of_Shipment
+label <- paste(label, ",", sep = " ")
+label <- paste(label, shipmentMode.piepercent)
+label <- paste(label, "%")
+
+pie(slice.shipmentMode, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Shipment modes")
+
+#`Cost of the product`
+h.cost <- hist(ES$Cost_of_the_Product, 
+                   main = "Cost of Products",
+                   xlab = "Costs",
+                   ylab ="Products that are of this particular cost",
+                   col = c("blue"),
+                   ylim = c(0, 1800),
+                   labels = TRUE)
+cost.group <- cut(ES$Cost_of_the_Product, h.cost$breaks)
+cost.table <- table(cost.group)
+kable(cost.table, caption = "Frequecy of Costs of Products")
+
+#`Weight in gms`
+h.weight <- hist(ES$Weight_in_gms, 
+                   main = "Weight in gms",
+                   xlab = "Weights",
+                   ylab =" Number of products discounts of that particular weight",
+                   col = c("blue"),
+                   ylim = c(0, 1700),
+                   labels = TRUE)
+weight.group <- cut(ES$Weight_in_gms, h.weight$breaks)
+weight.table <- table(weight.group)
+kable(weight.table, caption = "Frequecy of Weight of Products")
+
+#`Product Importance`
+productImportanceFreq <- ES %>% count(Product_importance)
+kable(productImportanceFreq, caption = "Product Importance Frequency")
+
+slice.productImp <- productImportanceFreq$n
+productImp.piepercent <- 100 * round(productImportanceFreq$n / sum(productImportanceFreq$n), 2)
+label <- productImportanceFreq$Product_importance
+label <- paste(label, ",", sep = " ")
+label <- paste(label, productImp.piepercent)
+label <- paste(label, "%")
+
+pie(slice.productImp, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Product importance")
+
+#`Discount offered `
+h.discount <- hist(ES$Discount_offered, 
+                   main = "Discounts offered",
+                   xlab = "Amount of discounts offered",
+                   ylab =" Number of products discounts were offered to",
+                   col = c("blue"),
+                   ylim = c(0, 4500),
+                   labels = TRUE)
+discount.group <- cut(ES$Discount_offered, h.discount$breaks)
+discount.table <- table(discount.group)
+kable(discount.table, caption = "Discount Offered Frequecy")
+
+#`Reached on time`
+onTimeFreq <- ES %>% count(Reached.on.Time_Y.N)
+kable(onTimeFreq, caption = "Reached on time Frequency")
+
+slice.onTime <- onTimeFreq$n
+onTime.piepercent <- 100 * round(onTimeFreq$n / sum(onTimeFreq$n), 2)
+label <- onTimeFreq$Reached.on.Time_Y.N
+label <- paste(label, ",", sep = " ")
+label <- paste(label, onTime.piepercent)
+label <- paste(label, "%")
+
+pie(slice.onTime, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Reached on Time")
+
+# ii)
+timeShipmentFreq <- ES %>% group_by(Reached.on.Time_Y.N, Mode_of_Shipment) %>% tally()
+timeShipmentFreq.spread <- timeShipmentFreq %>% spread(key = Mode_of_Shipment, value = n)
+kable(timeShipmentFreq.spread, caption = "Frequency distribution for `Reached on time` across different mode of shipments")
+
+# iii)
+timeWarehouseFreq <- ES %>% group_by(Reached.on.Time_Y.N, Warehouse_block) %>% tally()
+timeWarehouseFreq.spread <- timeWarehouseFreq %>% spread(key = Warehouse_block, value = n)
+kable(timeWarehouseFreq, caption = "frequency distribution for `Reached on time` across different warehouse blocks")
+
+# iv) 
+# compare the frequency distribution for `Reached on time` across different mode of shipments and different warehouse blocks in one table
+rpivotTable(ES, rows = c("Warehouse_block"), cols = c("Mode_of_Shipment", "Reached.on.Time_Y.N"), 
+            aggregatorName = "Frequency distribution for `Reached on time` across different mode of shipments and different warehouse blocks")
+
+# v)
+# cost of product and discount offered
+# plot a line graph
+plot(ES$Cost_of_the_Product, ES$Discount_offered, type = "o", col = "blue", xlab = "Cost of Product", ylab = "Discount offered", 
+     main = "Relationship between cost of product and discount offerered")
+
+# the extra question
+# across different warehouse blocks, fewer products were on time.
+# across different shipping methods, a greater proportion of products which were shipped by "Ship"arrived on time
+# from chart v, i observe that the discounts offered tend to be lower (0 to 10) for products whose costs are in the tail ends (100 and 300) while for the non-tail-end portions (about 120-270) the discounts offered were the highest
+```
+
+<p style="color:blue">
+
+# i)
+# `Warehouse Block`
+warehouseBlockFreq <- ES %>% count(Warehouse_block)
+kable(warehouseBlockFreq, caption = "Warehouse Block Frequency")
+
+slice.warehouseBlock <- warehouseBlockFreq$n
+warehouseBlock.piepercent <- 100 * round(warehouseBlockFreq$n / sum(warehouseBlockFreq$n), 2)
+label <- warehouseBlockFreq$Warehouse_block
+label <- paste(label, ",", sep = " ")
+label <- paste(label, warehouseBlock.piepercent)
+label <- paste(label, "%")
+
+pie(slice.warehouseBlock, labels = label, 
+    col = c("blue", "green", "red", "cyan", "orange", "yellow"),
+    radius = 1,
+    main = "Warehouse Blocks")
+
+#`Mode of Shipment`
+shipmentModeFreq <- ES %>% count(Mode_of_Shipment)
+kable(shipmentModeFreq, caption = "Shipment mode Frequency")
+
+slice.shipmentMode <- shipmentModeFreq$n
+shipmentMode.piepercent <- 100 * round(shipmentModeFreq$n / sum(shipmentModeFreq$n), 2)
+label <- shipmentModeFreq$Mode_of_Shipment
+label <- paste(label, ",", sep = " ")
+label <- paste(label, shipmentMode.piepercent)
+label <- paste(label, "%")
+
+pie(slice.shipmentMode, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Shipment modes")
+
+#`Cost of the product`
+h.cost <- hist(ES$Cost_of_the_Product, 
+                   main = "Cost of Products",
+                   xlab = "Costs",
+                   ylab ="Products that are of this particular cost",
+                   col = c("blue"),
+                   ylim = c(0, 1800),
+                   labels = TRUE)
+cost.group <- cut(ES$Cost_of_the_Product, h.cost$breaks)
+cost.table <- table(cost.group)
+kable(cost.table, caption = "Frequecy of Costs of Products")
+
+#`Weight in gms`
+h.weight <- hist(ES$Weight_in_gms, 
+                   main = "Weight in gms",
+                   xlab = "Weights",
+                   ylab =" Number of products discounts of that particular weight",
+                   col = c("blue"),
+                   ylim = c(0, 1700),
+                   labels = TRUE)
+weight.group <- cut(ES$Weight_in_gms, h.weight$breaks)
+weight.table <- table(weight.group)
+kable(weight.table, caption = "Frequecy of Weight of Products")
+
+#`Product Importance`
+productImportanceFreq <- ES %>% count(Product_importance)
+kable(productImportanceFreq, caption = "Product Importance Frequency")
+
+slice.productImp <- productImportanceFreq$n
+productImp.piepercent <- 100 * round(productImportanceFreq$n / sum(productImportanceFreq$n), 2)
+label <- productImportanceFreq$Product_importance
+label <- paste(label, ",", sep = " ")
+label <- paste(label, productImp.piepercent)
+label <- paste(label, "%")
+
+pie(slice.productImp, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Product importance")
+
+#`Discount offered `
+h.discount <- hist(ES$Discount_offered, 
+                   main = "Discounts offered",
+                   xlab = "Amount of discounts offered",
+                   ylab =" Number of products discounts were offered to",
+                   col = c("blue"),
+                   ylim = c(0, 4500),
+                   labels = TRUE)
+discount.group <- cut(ES$Discount_offered, h.discount$breaks)
+discount.table <- table(discount.group)
+kable(discount.table, caption = "Discount Offered Frequecy")
+
+#`Reached on time`
+onTimeFreq <- ES %>% count(Reached.on.Time_Y.N)
+kable(onTimeFreq, caption = "Reached on time Frequency")
+
+slice.onTime <- onTimeFreq$n
+onTime.piepercent <- 100 * round(onTimeFreq$n / sum(onTimeFreq$n), 2)
+label <- onTimeFreq$Reached.on.Time_Y.N
+label <- paste(label, ",", sep = " ")
+label <- paste(label, onTime.piepercent)
+label <- paste(label, "%")
+
+pie(slice.onTime, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Reached on Time")
+
+# ii)
+timeShipmentFreq <- ES %>% group_by(Reached.on.Time_Y.N, Mode_of_Shipment) %>% tally()
+timeShipmentFreq.spread <- timeShipmentFreq %>% spread(key = Mode_of_Shipment, value = n)
+kable(timeShipmentFreq.spread, caption = "Frequency distribution for `Reached on time` across different mode of shipments")
+
+# iii)
+timeWarehouseFreq <- ES %>% group_by(Reached.on.Time_Y.N, Warehouse_block) %>% tally()
+timeWarehouseFreq.spread <- timeWarehouseFreq %>% spread(key = Warehouse_block, value = n)
+kable(timeWarehouseFreq, caption = "frequency distribution for `Reached on time` across different warehouse blocks")
+
+# iv) 
+# compare the frequency distribution for `Reached on time` across different mode of shipments and different warehouse blocks in one table
+rpivotTable(ES, rows = c("Warehouse_block"), cols = c("Mode_of_Shipment", "Reached.on.Time_Y.N"), 
+            aggregatorName = "Frequency distribution for `Reached on time` across different mode of shipments and different warehouse blocks")
+
+# v)
+# cost of product and discount offered
+# plot a line graph
+plot(ES$Cost_of_the_Product, ES$Discount_offered, type = "o", col = "blue", xlab = "Cost of Product", ylab = "Discount offered", 
+     main = "Relationship between cost of product and discount offerered")
+
+# the extra question
+# across different warehouse blocks, fewer products were on time.
+# across different shipping methods, a greater proportion of products which were shipped by "Ship"arrived on time
+# from chart v, i observe that the discounts offered tend to be lower (0 to 10) for products whose costs are in the tail ends (100 and 300) while for the non-tail-end portions (about 120-270) the discounts offered were the highest
+ 
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+### Q2.(b) Customer Analyses Dashboard (7 marks)
+This dashboard is to enable the company to understand their customers better. The following are the requirements for the Customer Analyses Dashboard: 
+
+- i. To be able to view the frequency distributions for each of the following variables in a chart and table: `Gender`, `Customer_care_calls`, `Customer_rating`
+- ii. To be able to view the frequency distribution for `Customer rating` across different Gender in one table and barplot. Do you observe any difference in customer rating across females and males? 
+- iii. To be able to view the frequency distribution for `Cost_of_the_Products` for each gender in two separate tables and charts. Do you observe any different across females and males? 
+
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+
+```{r q2.(b), echo=TRUE}
+# i)
+genderFreq <- ES %>% count(Gender)
+kable(genderFreq, caption = "Gender Frequency")
+
+slice.gender <- genderFreq$n
+gender.piepercent <- 100 * round(genderFreq$n / sum(genderFreq$n), 2)
+label <- genderFreq$Gender
+label <- paste(label, ",", sep = " ")
+label <- paste(label, gender.piepercent)
+label <- paste(label, "%")
+
+pie(slice.gender, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Genders")
+
+#`Customer_care_calls`
+callsFreq <- ES %>% count(Customer_care_calls)
+kable(callsFreq, caption = "Customer Care Calls Frequency")
+
+slice.calls <- callsFreq$n
+calls.piepercent <- 100 * round(callsFreq$n / sum(callsFreq$n), 2)
+label <- callsFreq$Customer_care_calls
+label <- paste(label, ",", sep = " ")
+label <- paste(label, calls.piepercent)
+label <- paste(label, "%")
+
+pie(slice.calls, labels = label, 
+    col = c("blue", "green", "red", "yellow", "orange", "purple"),
+    radius = 1,
+    main = "Customer Care Calls")
+
+#`Customer_rating`
+ratingFreq <- ES %>% count(Customer_rating)
+kable(ratingFreq, caption = "Customer Rating Frequency")
+
+slice.rating <- ratingFreq$n
+rating.piepercent <- 100 * round(ratingFreq$n / sum(ratingFreq$n), 2)
+label <- ratingFreq$Customer_rating
+label <- paste(label, ",", sep = " ")
+label <- paste(label, rating.piepercent)
+label <- paste(label, "%")
+
+pie(slice.rating, labels = label, 
+    col = c("blue", "green", "red", "yellow", "orange"),
+    radius = 1,
+    main = "Customer Ratings")
+
+# ii)
+# create contingency table for Gender (as rows) and Customer ratings (as columns)
+ES1 <- ES %>% group_by(Gender, Customer_rating) %>% tally()
+ES1.spread <- ES1 %>% spread(key = Customer_rating, value = n)
+kable(ES1.spread, caption = "Contingency table for Gender and Customer Rating")
+
+# create stacked barplot
+barmatrix.ES1 <- as.matrix(ES1.spread[, c(2: 6)])
+bar_col <- c("blue", "grey")
+barplot(barmatrix.ES1, col = bar_col, main = "Gender and Customer Rating")
+legend("topright", cex = 0.6, fill = bar_col, ES1.spread$Gender)
+
+# comments on the differences
+# the proportion of females and males who contributed to each rating was approximately similar, i.e. 50% from female, 50% from male per rating
+
+# iii)
+# females
+filtFemales <- ES %>% filter(Gender == 'F')
+h.females <- hist(filtFemales$Cost_of_the_Product, 
+                   main = "Product Cost Frequency for Females",
+                   xlab = "Cost of the Product",
+                   ylab =" Number of females",
+                   col = c("blue"),
+                   ylim = c(0, 1000),
+                   labels = TRUE)
+females.group <- cut(filtFemales$Cost_of_the_Product, h.females$breaks)
+females.table <- table(females.group)
+kable(females.table, caption = "Product Cost Frequency for Females")
+
+#males
+filtMales <- ES %>% filter(Gender == 'M')
+h.males <- hist(filtMales$Cost_of_the_Product, 
+                   main = "Product Cost Frequency for Males",
+                   xlab = "Cost of the Product",
+                   ylab =" Number of males",
+                   col = c("blue"),
+                   ylim = c(0, 1000),
+                   labels = TRUE)
+males.group <- cut(filtMales$Cost_of_the_Product, h.males$breaks)
+males.table <- table(males.group)
+kable(males.table, caption = "Product Cost Frequency for Males")
+```
+
+<p style="color:blue">
+
+genderFreq <- ES %>% count(Gender)
+kable(genderFreq, caption = "Gender Frequency")
+
+slice.gender <- genderFreq$n
+gender.piepercent <- 100 * round(genderFreq$n / sum(genderFreq$n), 2)
+label <- genderFreq$Gender
+label <- paste(label, ",", sep = " ")
+label <- paste(label, gender.piepercent)
+label <- paste(label, "%")
+
+pie(slice.gender, labels = label, 
+    col = c("blue", "green", "red"),
+    radius = 1,
+    main = "Genders")
+
+#`Customer_care_calls`
+callsFreq <- ES %>% count(Customer_care_calls)
+kable(callsFreq, caption = "Customer Care Calls Frequency")
+
+slice.calls <- callsFreq$n
+calls.piepercent <- 100 * round(callsFreq$n / sum(callsFreq$n), 2)
+label <- callsFreq$Customer_care_calls
+label <- paste(label, ",", sep = " ")
+label <- paste(label, calls.piepercent)
+label <- paste(label, "%")
+
+pie(slice.calls, labels = label, 
+    col = c("blue", "green", "red", "yellow", "orange", "purple"),
+    radius = 1,
+    main = "Customer Care Calls")
+
+#`Customer_rating`
+ratingFreq <- ES %>% count(Customer_rating)
+kable(ratingFreq, caption = "Customer Rating Frequency")
+
+slice.rating <- ratingFreq$n
+rating.piepercent <- 100 * round(ratingFreq$n / sum(ratingFreq$n), 2)
+label <- ratingFreq$Customer_rating
+label <- paste(label, ",", sep = " ")
+label <- paste(label, rating.piepercent)
+label <- paste(label, "%")
+
+pie(slice.rating, labels = label, 
+    col = c("blue", "green", "red", "yellow", "orange"),
+    radius = 1,
+    main = "Customer Ratings")
+
+# ii)
+# create contingency table for Gender (as rows) and Customer ratings (as columns)
+ES1 <- ES %>% group_by(Gender, Customer_rating) %>% tally()
+ES1.spread <- ES1 %>% spread(key = Customer_rating, value = n)
+kable(ES1.spread, caption = "Contingency table for Gender and Customer Rating")
+
+# create stacked barplot
+barmatrix.ES1 <- as.matrix(ES1.spread[, c(2: 6)])
+bar_col <- c("blue", "grey")
+barplot(barmatrix.ES1, col = bar_col, main = "Gender and Customer Rating")
+legend("topright", cex = 0.6, fill = bar_col, ES1.spread$Gender)
+
+# comments on the differences
+# the proportion of females and males who contributed to each rating was approximately similar, i.e. 50% from female, 50% from male per rating
+
+# iii)
+# females
+filtFemales <- ES %>% filter(Gender == 'F')
+h.females <- hist(filtFemales$Cost_of_the_Product, 
+                   main = "Product Cost Frequency for Females",
+                   xlab = "Cost of the Product",
+                   ylab =" Number of females",
+                   col = c("blue"),
+                   ylim = c(0, 1000),
+                   labels = TRUE)
+females.group <- cut(filtFemales$Cost_of_the_Product, h.females$breaks)
+females.table <- table(females.group)
+kable(females.table, caption = "Product Cost Frequency for Females")
+
+#males
+filtMales <- ES %>% filter(Gender == 'M')
+h.males <- hist(filtMales$Cost_of_the_Product, 
+                   main = "Product Cost Frequency for Males",
+                   xlab = "Cost of the Product",
+                   ylab =" Number of males",
+                   col = c("blue"),
+                   ylim = c(0, 1000),
+                   labels = TRUE)
+males.group <- cut(filtMales$Cost_of_the_Product, h.males$breaks)
+males.table <- table(males.group)
+kable(males.table, caption = "Product Cost Frequency for Males")
+
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+### Q2.(c) Pareto Analyses (2 marks)
+The company would like the findings of the Pareto analyses on Cost of Product to be displayed in this dashboard. To do this, you will need to show the number and percentage of customers that contribute most significantly to 80% of the total cost of products shipped. (For tutorial discussion only: Explain intuitively, what the results of the Pareto Analyses imply.)
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+
+```{r q2.(c), echo=TRUE}
+
+# extracting Cost_of_the_Product column
+ES.cost <- ES %>% select(Cost_of_the_Product) %>% arrange(desc(Cost_of_the_Product))
+
+#Computing percentage of cost over total cost
+ES.cost$percentage <- ES.cost$Cost_of_the_Product/sum(ES.cost$Cost_of_the_Product)
+
+#computing cumulative percentage for Cost_of_the_Product
+ES.cost$Cumulative <- cumsum(ES.cost$percentage)
+
+# Computing cumulative percentage of cost from top most costs
+ES.cost$Cumulative.cust <- as.numeric(rownames(ES)) / nrow(ES)
+
+# percentage of costs contributing most significantly to at least 80% total cost of products shipped
+which(ES.cost$Cumulative > 0.8)[1] # let the result of this be x (the actual result I obtained was 7898)
+(which(ES.cost$Cumulative > 0.8)[1])/nrow(ES) # let the result of this be y (the actual result I obtained was 0.7180653)
+
+# the results of the Pareto analysis implies that there are x products contributing most significantly to 80% of the cost of products
+# the x products constitutes y percent of the total number of products
+```
+
+<p style="color:blue">
+
+# extracting Cost_of_the_Product column
+ES.cost <- ES %>% select(Cost_of_the_Product) %>% arrange(desc(Cost_of_the_Product))
+
+#Computing percentage of cost over total cost
+ES.cost$percentage <- ES.cost$Cost_of_Product/sum(ES.cost$Cost_of_Product)
+
+#computing cumulative percentage for Cost_of_the_Product
+ES.cost$Cumulative <- cumsum(ES.cost$perecentage)
+
+# Computing cumulative percentage of cost from top most costs
+ES.cost$Cumulative.cust <- as.numeric(rownames(ES) / nrow(ES))
+
+# percentage of costs contributing most significantly to at least 80% total cost of products shipped
+which(ES.cost$Cumulative > 0.8)[1] # let the result of this be x
+(which(ES.cost$Cumulative > 0.8)[1])/nrow(ES) # let the result of this be y
+
+# the results of the Pareto analysis implies that there are x products contributing most significantly to 80% of the cost of products
+# the x products constitutes y percent of the total number of products
+ 
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>

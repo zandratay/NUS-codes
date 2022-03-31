@@ -1,0 +1,435 @@
+---
+title: "BT1101-Tutorial 5 (Part 2 Deadline: 11 Mar 9am)"
+output: html_document
+---
+
+## Introduction to R Markdown
+
+R Markdown, is an extremely useful tool that professional data scientists and business analysts use in their day-to-day work.
+
+You can open R Markdown documents in RStudio as well. You should see a little command called "Knit", which allows you to "knit" the entire R Markdown file into a HTML document, or a PDF document, or a MS Word Document (note, for MS Word, you'll need MS Word installed on your system; for PDF, you need to have Tex/Latex distribution installed).
+
+R Markdown is nice to use simply because it allows you to embed both code and write-up into the same document, and it produces presentable output, so you can use it to generate reports from your homework, and, when you eventually go out to work in a company, for your projects.
+
+Here's how you embed a "chunk" of R code.
+
+```{r example-chunk, echo=TRUE}
+1+1
+```
+
+After the three apostrophes, you'll need `r`, then you can give the chunk a name. Please note that **CHUNK NAMES HAVE TO BE A SINGLE-WORD, NO SPACE ALLOWED**. Also, names have to be unique, that is, every chunk needs a **different** name (this has led to rendering failures in previous final exams). You can give chunks names like:
+
+- `chunk1`
+- `read-in-data`
+- `run-regression`
+
+or, what will help you with homework:
+
+- `load-library`
+- `q1.(a)` etc
+
+These names are for you to help organize your code. (In practice it will be very useful when you have files with thousands of lines of code...). After the name of the chunk, you can give it certain options, separated by commas. I will highlight one important option. 
+
+- `echo=TRUE` means the code chunk will be copied into the output file. For homework purposes, **ALWAYS** set `echo=TRUE` so we know what code you wrote. When you go out to work in a company and you want to produce nice looking reports, feel free to set it to FALSE.
+
+
+There is a lot to syntax to learn using the R Markdown, but we don't need you to be an expert in R Markdown (although we do expect proficiency in R!). Hopefully, you can copy all the R Markdown syntax you need from the templates we provide. 
+
+
+Note about *working directories* in R Markdown. If you do not specify your working directory via `setwd('...')`, and you hit `Knit`, the document will assume that the working directory is the directory that the `.rmd` file is in. Thus, if your rmd is in `XYZ/folder1/code.rmd` and your dataset is `XYZ/folder1/data.csv`, then you can simply run `d0 <- read.csv('data.csv')` without running `setwd()`.
+
+
+## Submission Instructions
+
+- Select `output: html_document`.
+- We would recommend that you play with the PDF file using pdf_document for your own benefit. We only require `html` format for assignments and exam.
+- Include all code chunks, so include `echo=TRUE` in all chunks.
+- Replace the placeholder text, "Type your answer here.", with the answer of your own.  (This is usually the descriptive and explanation part of your answer)
+- Submit *only* the required question for grading (Part 2: For Submission). You can delete everything else for that submission. Remember to include any `library('package_name')` statements that you'll need to run your code and future reproduction. 
+- Rename your R Markdown file `T[X]-[MatricNumber].rmd`, and the output will automatically be `T[X]-[MatricNumber].html`.
+    - for example, `T5-12345.html`
+    - X is the Tutorial number at the top of this file. For example, this file is for "T5".
+- Submit both R Markdown file (.rmd) and HTML (.html) to Luminus for tutorial assignments (upload to Luminus under the correct Submission Folder). We shall do the same for the exam.
+- **It is important to be able to code and produce your Rmarkdown output file *independently*.** You are responsible for de-bugging and programming in the exam.
+
+## Preparation
+
+## Tutorial 5
+
+```{r load-libraries, echo=TRUE}
+# install required packages if you have not (suggested packages: rcompanion, rstatix, Rmisc, dplyr, tidyr, rpivotTable, knitr, psych)
+# install.packages("dplyr") #only need to run this code once to install the package
+# load required packages 
+# library("xxxx")
+library("Rmisc")
+library("dplyr") #need to call the library before you use the package
+library("tidyr")
+library("rpivotTable")
+library("knitr")
+library("psych")
+library("rcompanion")
+library("readxl")
+library("rstatix")
+```
+
+### Tutorial 5 Part 2: CardioGood Fitness (To be Submitted; 30 marks)
+Context:  Your market research team at AdRight is assigned to study the profile of the typical customer for each treadmill product offered by CardioGood Fitness. The team decides to collect data on individuals who purchased a treadmill at a CardioGoodFitness retail store during the prior three months. 
+
+The data are stored in the `CardioGoodFitness.csv` file. The team identifies the following customer variables to study: 
+
+- `Product`: product purchased (TM195, TM498, or TM798)
+- `Age`: in years
+- `Gender`: Female or Male
+- `Education`: number of years of education 
+- `MaritalStatus`: Single or Partnered
+- `Usage`: average number of times the customer plans to use the treadmill each week
+- `Fitness`: self-rated fitness on an 1-to-5 scale, where 1 is poor shape and 5 is excellent shape. 
+- `Income`: annual household income ($)
+- `Miles`: average number of miles the customer expects to walk/run each week
+
+<p>
+**In Tutorial 4, you were tasked by your team to help create the dashboards and analytics towards a better understanding of the customer profile of the CardioGood Fitness treadmill product line. In this tutorial you will help to develop estimates and to conduct some hypothesis testings. Where necessary, check the distribution for the variables and for the presence of outliers <FONT COLOR=blue>(4 marks for outlier analyses). </FONT COLOR>**
+</p>
+
+<p>
+**To encourage you to learn to debug your RMD file and be able to knit your RMD file to HTML, we will also award <FONT COLOR=blue> 1 mark for including your HTML file in your submission </FONT COLOR>. If you have any error codes in your RMD file that you are unable to fix prior to your assignment submission, you may add a # sign to comment away the error codes so that the RMD file can knit.**
+</p>
+
+```{r data-read-in2, echo=T, eval=T}
+# Please check that the .csv file is in the same directory as your Rmd file.
+getwd()
+setwd("C:/Users/zandr/OneDrive/Desktop/R")
+d1 <- read.csv("CardioGoodFitness.csv")
+head(d1)
+```
+
+
+#### Q2.(a) Computing Interval Estimates
+Using the data that the team has collected:  
+
+- i. Find the 95% prediction interval for `Age`. Explain this finding to the team. (3 marks)
+- ii. Develop the 95% confidence interval for mean customer age. Based on this confidence interval, explain to the team if there is sufficient evidence to conclude that its customers' average age is 30?  (2 marks)
+- iii. Develop the 95% confidence interval for the true proportion of male customers. From this interval estimate, should the team believe that the company has more male customers than female customers?) (2 marks)
+
+Type your findings and explanations in the space below.  
+
+For tutorial discussion: Repeat the above with 90% intervals. Compare the widths of the 90% intervals vs  95% intervals. Which intervals provide better precision? 
+
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+```{r q2a, echo=TRUE}
+
+## Type your codes here
+
+# i
+qqnorm(d1$Age, ylab = "Sample quantiles for Age")
+qqline(d1$Age, col = 'red')
+shapiro.test(d1$Age)
+# since p-value < 0.05, not normally distributed. hence we have to reshape the distribution to more closely approximate a normal distribution
+d1$Age.t = transformTukey(d1$Age, plotit = TRUE)
+# from the transformTukey function, out lambda value is -1.25
+# {TRANS = -1 * x ^ lambda}
+# using -1 * x ^ lambda where lambda is -1.25
+meanAge.t <- mean(d1$Age.t)
+sdAge.t <- sd(d1$Age.t)
+lower1 <- meanAge.t + (qt(0.025, df = (nrow(d1)-1)) * sdAge.t * sqrt(1 + 1/nrow(d1)))
+upper1 <- meanAge.t - (qt(0.025, df = (nrow(d1)-1)) * sdAge.t * sqrt(1 + 1/nrow(d1)))
+cbind(lower1, upper1)
+
+# reversing the transformation
+# y = -1 * x ^ -1.25
+# x = -y ^ -1.25
+lower2 <- (1/-lower1)^0.8
+upper2 <- (1/-upper1)^0.8
+print(cbind(lower2, upper2), digits = 4)
+
+# ii
+plot(density(d1$Age), main = "Density plot for `Age`")
+# the density plot shows us that there are no outliers
+upper3 <- mean(d1$Age) - qt(0.025, df = nrow(d1)-1) * sd(d1$Age)/sqrt(nrow(d1))
+lower3 <- mean(d1$Age) + qt(0.025, df = nrow(d1)-1) * sd(d1$Age)/sqrt(nrow(d1))
+print(cbind(lower3, upper3), digits = 4)
+
+# iii 
+males <- d1 %>% filter(Gender == "Male")
+propMales <- nrow(males)/ nrow(d1)
+lower4 <- propMales + (qnorm(0.025)*sqrt(propMales*(1-propMales)/nrow(d1)))
+upper4 <- propMales - (qnorm(0.025)*sqrt(propMales*(1-propMales)/nrow(d1)))
+print(cbind(lower4, upper4), digits = 3)
+```
+
+<p style="color:blue">
+
+i)
+after transformed tukey function: <br>
+lower bound a 95% PI: -0.02453743 <br>
+upper bound at 95% PI: -0.007663185 <br>
+after transforming back to the original variable:<br>
+lower bound a 95% PI: 19.41 <br>
+upper bound at 95% PI: 49.26 <br>
+This means that the possible ages will fall within this prediction interval with 95% level of confidence.<br>
+95% of data obtained from repeated sampling will contain the actual value of `Age`.
+
+ii)
+lower bound = 27.77, upper bound = 29.81 <br>
+There is sufficient evidence to conclude that the mean age is NOT 30. We have a 95% level of confidence that the mean age lies between the the lower and upper bound, and 30 is out of these bounds already. 
+
+iii)
+No, as the confidence interval is from 0.506 to 0.65, which is not quite the majority. a majority could possibily be defined as more than 90% instead.
+
+</p>
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+#### Q2.(b) Understanding Customer Income data
+Could you assist the team to assess whether there is any difference in mean income between
+
+- i.  female versus male customers.
+- ii. customers who purchased TM195, TM498 versus TM798. 
+
+Plot a graph for each of the comparisons, then set up the appropriate hypotheses and conduct the hypotheses tests using a 5% significance level. Type the hypotheses and your findings in the space below.  
+
+(8 marks)
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+```{r q2b, echo=TRUE}
+
+## Type your codes here
+
+# i
+# H0: female mean income = male mean income
+# H1: female mean income != male mean income
+t.test(Income~Gender, data = d1)
+
+# plotting a graph for the comparisons
+d2 <- d1%>% group_by(Gender) %>% summarize(mean = mean(Income))
+kable(d2, main = "Mean incomes of males and females")
+bp <- barplot(d2$mean, names.arg = d2$Gender, col = "yellow", main = "Mean incomes of males and females", cex.names = 0.7, las = 1)
+text(bp, 0, d2$mean, pos = 3)
+
+#conducting outlier analysis
+fmales <- d1 %>% filter(Gender == "Female")
+boxplot(fmales$Income, range = 3)
+boxplot(fmales$Income, range = 1.5)
+# There are outliers present for Females income, with some of them earning way beyond the 3rd and 1.5th interquartile range
+
+boxplot(males$Income, range = 3) # no outliers for this case
+boxplot(males$Income, range = 1.5) # many outliers here! many males earning way beyond the 1.5th interquartile range
+
+
+# ii
+# H0: mean income of cust who purchased TM195 = that of TM498 = that of TM798
+# H1: at least 1 is different from the others
+
+# plotting a graph for the comparison
+d4 <- d1 %>% group_by(Product) %>% summarise(mean = mean(Income))
+kable(d4, main = "Mean Incomes of customers who purchased each treadmill model")
+bp2 <- barplot(d4$mean, names.arg = d4$Product, col = "yellow", main = "Mean Incomes of Customers who purchased each treadmill model", cex.names = 0.7, las = 1)
+text(bp2, 0, d4$mean, pos = 3)
+
+# checking assumptions for ANOVA:
+# 1. data points are independent (assumed to be true due to random sampling)
+
+# 2. within each group, data is normally distributed
+tm195 <- d1 %>% filter(Product == "TM195")
+tm498 <- d1 %>% filter(Product == "TM498")
+tm798 <- d1 %>% filter(Product == "TM798")
+# plot histograms
+hist(tm195$Income, main = "Histogram for customers who purchased TM195", xlab = "Incomes")
+hist(tm798$Income, main = "Histogram for customers who purchased TM798", xlab = "Incomes")
+hist(tm498$Income, main = "Histogram for customers who purchased TM498", xlab = "Incomes")
+# shape of histograms generally resemble a bell shaped curve, so assumed to be normally distributed
+
+# 3. these distributions have equal variances
+fligner.test(Income~Product, d1)
+# p-value < 0.05, variances are not homogenous, so we perform welch ANOVA test
+
+# check sample sizes across 3 products
+table(d1$Product)
+# group sizes are quite different, with the group size of TM798 being half of that of TM195
+
+# welch ANOVA
+wa1 <- d1 %>% welch_anova_test(Income~Product)
+# games howell test does not assume normality and equal vairances
+gh1 <- games_howell_test(d1, Income~Product)
+wa1
+gh1
+
+# checking outliers
+boxplot(tm195$Income, range = 3)
+boxplot(tm195$Income, range = 1.5)
+# no outliers in income for customers who purchased the TM195 for both 3rd and 1.5th interquartile range
+boxplot(tm498$Income, range = 3)
+boxplot(tm498$Income, range = 1.5)
+# no outliers in income for customers who purchased the TM498 for both 3rd and 1.5th interquartile range
+boxplot(tm798$Income, range = 3)
+boxplot(tm798$Income, range = 1.5)
+# no outliers in income for customers who purchased the TM798 for both 3rd and 1.5th interquartile range
+
+```
+
+<p style="color:blue">
+
+i)
+The t-statistic is -2.9146. since p-value < 0.05, we can conclude that there is a significant difference between the mean income of males vs females.<br>
+Furthermore, there are outliers for the incomes of both Females and Males, as indicated in the above code which displays the boxplots.
+
+ii)
+the p-value for Welch-ANOVA test is < 0.05, we reject the null hypothesis. hence there is a significant difference in mean incomes of customers who bought each different model of treadmill. <br>
+Furthermore, there are no outliers for the incomes within each category of customers who bought each type of treadmill.
+
+</p>
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+#### Q2.(c) Comparing customer usage and exercise pattern
+There are two variables that capture the customers usage and exercise pattern: `Usage` and `Miles`. 
+
+- i. Test if there is any significant difference in mean `Usage` across the 3 products - TM195, TM498 versus TM798 (3 marks)
+- ii. Repeat the above test (i) for `Miles`.(3 marks)
+- iii. Test if the mean `Miles` for customers is higher for customers with "High" fitness versus those with "Low" fitness. "High" fitness is defined by customers with a self-rated fitness score that is greater than the median while "Low" fitness is defined by customer with a self-rated fitness score equal or lower than the median. (Hint: You can create a categorical variable for the two levels of Fitness.) (4 marks)
+
+Set up the appropriate hypotheses and conduct the hypotheses tests using 5% significance level. Type your hypotheses and findings in the space below.
+
+For tutorial discussion: Based on your analyses of the CardioGoodFitness restore, discuss how you think the 3 types of treadmills may differ (e.g. in terms of the features or customers that are attracted to the product). 
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+```{r q2c, echo=TRUE}
+
+## Type your codes here
+
+# i
+# H0: mean usage of cust who purchased TM195 = that of TM498 = that of TM798
+# H1: at least 1 is different from the others
+
+# checking assumptions for ANOVA:
+# 1. data points are independent (assumed to be true due to random sampling)
+
+# 2. within each group, data is normally distributed
+# tm195 <- d1 %>% filter(Product == "TM195")
+# tm498 <- d1 %>% filter(Product == "TM498")
+# tm798 <- d1 %>% filter(Product == "TM798")
+# plot histograms
+hist(tm195$Usage, main = "Histogram for customers who purchased TM195", xlab = "Usages")
+hist(tm798$Usage, main = "Histogram for customers who purchased TM798", xlab = "Usages")
+hist(tm498$Usage, main = "Histogram for customers who purchased TM498", xlab = "Usages")
+# shape of histograms generally resemble a bell shaped curve, so assumed to be normally distributed
+
+# 3. these distributions have equal variances
+fligner.test(Usage~Product, d1)
+# p-value > 0.05, equal variances. I will choose to perform Welch ANOVA test anyway.
+
+# check sample sizes across 3 products
+table(d1$Product)
+# group sizes are quite different, with the group size of TM798 being half of that of TM195
+
+# welch ANOVA
+wa2 <- d1 %>% welch_anova_test(Usage~Product)
+# games howell test does not assume normality and equal vairances
+gh2 <- games_howell_test(d1, Usage~Product)
+wa2
+gh2
+
+# checking for outliers for mean usage
+boxplot(tm195$Usage, range = 3)
+boxplot(tm195$Usage, range = 1.5)
+# no outliers in income for customers who purchased the TM195 for both 3rd and 1.5th interquartile range
+boxplot(tm498$Usage, range = 3)
+boxplot(tm498$Usage, range = 1.5)
+# no outliers in income for customers who purchased the TM498 for the 3rd interquartile range, but 2 outliers at each extreme end for the 1.5th interquartile range.
+boxplot(tm798$Usage, range = 3)
+boxplot(tm798$Usage, range = 1.5)
+# no outliers in income for customers who purchased the TM798 for the 3rd interquartile range, but 1 outlier for the 1.5th interquartile range.
+
+
+# ii
+# H0: mean miles of cust who purchased TM195 = that of TM498 = that of TM798
+# H1: at least 1 is different from the others
+
+# checking assumptions for ANOVA:
+# 1. data points are independent (assumed to be true due to random sampling)
+
+# 2. within each group, data is normally distributed
+# tm195 <- d1 %>% filter(Product == "TM195")
+# tm498 <- d1 %>% filter(Product == "TM498")
+# tm798 <- d1 %>% filter(Product == "TM798")
+# plot histograms
+hist(tm195$Miles, main = "Histogram for customers who purchased TM195", xlab = "Miles")
+hist(tm798$Miles, main = "Histogram for customers who purchased TM798", xlab = "Miles")
+hist(tm498$Miles, main = "Histogram for customers who purchased TM498", xlab = "Miles")
+# shape of histograms generally resemble a bell shaped curve, so assumed to be normally distributed
+
+# 3. these distributions have equal variances
+fligner.test(Miles~Product, d1)
+# p-value < 0.05, equal variances, so perform Welch ANOVA test.
+
+# check sample sizes across 3 products
+table(d1$Product)
+# group sizes are quite different, with the group size of TM798 being half of that of TM195
+
+# welch ANOVA
+wa3 <- d1 %>% welch_anova_test(Miles~Product)
+# games howell test does not assume normality and equal vairances
+gh3 <- games_howell_test(d1, Miles~Product)
+wa3
+gh3
+
+# checking for outliers for mean miles
+boxplot(tm195$Miles, range = 3)
+boxplot(tm195$Miles, range = 1.5)
+# 1 outliers in income for customers who purchased the TM195 for 3rd interquartile range, and 3 outliers for that of the 1.5th interquartile range
+boxplot(tm498$Miles, range = 3)
+boxplot(tm498$Miles, range = 1.5)
+# no outliers in income for customers who purchased the TM498 for the 3rd interquartile range, but 2 outliers at each extreme end for the 1.5th interquartile range.
+boxplot(tm798$Miles, range = 3)
+boxplot(tm798$Miles, range = 1.5)
+# no outliers in income for customers who purchased the TM798 for the 3rd interquartile range, but 1 outlier for the 1.5th interquartile range.
+
+# iii
+med <- median(d1$Fitness) # 3
+# create categorical variable for fitness
+d1$fitnessType <- NA
+d1$fitnessType[d1$Fitness <= 3] <- "low"
+d1$fitnessType[d1$Fitness > 3] <- "high" 
+d1$fitnessType <- as.factor(d1$fitnessType)
+levels(d1$fitnessType)
+# H0: mean miles for high fitness <= mean miles for low fitness (defined differently from question so that the equality sign is in H0)
+# H1: mean miles for high fitness > mean miles for low fitness
+t.test(Miles~fitnessType, alternative = "less", data = d1)
+
+# checking for outliers for mean miles
+high2 <- d1 %>% filter(Fitness > 3)
+low2 <- d1 %>% filter(Fitness <= 3)
+boxplot(high2$Miles, range = 3) # no outliers
+boxplot(high2$Miles, range = 1.5) # 3 outliers
+boxplot(low2$Miles, range = 3) # no outliers
+boxplot(low2$Miles, range = 1.5) # 1 outlier
+
+```
+
+<p style="color:blue">
+
+i)
+the p-value for Welch-ANOVA test is < 0.05, we reject the null hypothesis. hence there is a significant difference in mean usages for each different model of treadmill. <br>
+There are some outliers to take note of, as shown in the above r code.
+
+ii)
+the p-value for Welch-ANOVA test is < 0.05, we reject the null hypothesis. hence there is a significant difference in mean miles for each different model of treadmill. <br>
+There are some outliers to take note of, as shown in the above r code.
+
+iii)
+From the output of the t.test as follows: "true difference in means between group high and group low is less than 0",
+this matches the null hypothesis that I had defined. 
+Furthermore, p > 1. so we can conclude that the mean miles for those with high fitness is lower than or equals to that with low fitness. <br>
+There are some outliers to take note of, as shown in the above r code.
+
+</p>
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+
+
+
+
+
+

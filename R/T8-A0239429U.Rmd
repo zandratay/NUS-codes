@@ -1,0 +1,212 @@
+---
+title: 'Tutorial 8: Data Mining Basics'
+author: "Tay Xinyu, Zandra. A0239429U"
+date: "Due by 1 April 2022, 8:00 AM"
+output: html_document
+---
+
+## Submission Instructions
+
+- Select `output: html_document`.
+- Include all code chunks, so include `echo=TRUE` in all chunks.
+- Replace the placeholder text, "Type your answer here.", with your own.
+- Submit *only* the required question for grading (Part 2: Submission). You can delete everything else for that submission. Remember to include any `library('package_name')` statements that you'll need to run your code and future reproduction. 
+- Rename your R Markdown file `T[X]_[MatricNumber].rmd`, and the output will automatically be `T[X]_[MatricNumber].html`. 
+- Submit your both R Markdown file (.rmd) and HTML (.html) to Luminus for tutorial assignments (upload to Luminus under the correct Submission Folder). We shall do the same for practical exam.
+- **It is important to be able to code and produce your Rmarkdown output file *independently*.** You are responsible for de-bugging and programming in the practical exam.
+
+```{r load-libraries, echo=TRUE, warning = FALSE, message = FALSE}
+# load required packages
+library(dplyr)
+library(tidyr)
+library(car) # for linearHypothesis()
+library(ggplot2) # optional. we expect you to know base graphics, but allow ggplot if you find it easier
+library(psych) # for pairs.panels()
+# install.packages("factoextra")
+library(factoextra) # for fviz_cluster()
+library(wooldridge)
+library(caret)
+```
+
+
+
+## Part Two: Assignment Submission 
+
+### Question 2 (total 15 points)
+
+
+- Dataset required: `attend` (wooldridge)
+
+In this question, we will be doing a model selection, principal component analysis, building a simple logit classifier, and finally assessing the output of that classifier for class performance.
+
+The dataset for this question is available at: https://rdrr.io/cran/wooldridge/man/attend.html. a public available dataset about class attendance and final/GPA performance. Again, you need to install and load package `wooldridge` to conveniently load the data into your R workplace. 
+
+```{r q2-dataloading, echo=TRUE}
+data('attend')
+```
+
+Here are the variables in the dataset:
+
+- `attend`: classes attended out of 32.
+- `termGPA`: GPA for current term.
+- `priGPA`: cumulative GPA prior to current term.
+- `ACT`: ACT score.
+- `final`: final test score.
+- `atndrte`: percentage of class attendance, i.e. `attend` divided by `32`.
+- `hwrte`: percentage of homework turned in.
+- `frosh`: freshmen if = 1.
+- `soph`: sophomore if = 1.
+- `missed`: number of classes missed, i.e. `attend` + `missed` = 32.
+- `stndfnl`: standardized final test score, i.e. (`final`-mean)/sd.
+
+In the code below I make a new variable `pass` (pass the exam) which is one if student's final performance belongs to upper 40% of class comparable to his/her peers (curved) based on the standardized final test score, i.e. `stndfnl` is greater than 60th-quantile of `stndfnl`, This would be a binary dependent variable we shall use.
+
+In this question, we will be interested in using the independent variables (student's class attendance) to classify the sample into whether student will pass or not. 
+
+Here are what the independent variables look like (using the `pairs.panels()` function from the `psych` package)
+
+```{r q2-read-in-dataset, echo=TRUE, fig.width=10}
+# create a binary variable 'pass',
+attend$pass = ifelse(attend$stndfnl > quantile(attend$stndfnl, 0.6), 1, 0)
+# removing NA's in the data, just to avoid some programming issues later. WARNING: don't simply do this in your future projects.
+attend = attend[complete.cases(attend),]
+# Selecting out the independent variables "X".
+attendX = attend %>% select(c("attend", "termGPA", "priGPA", "ACT", "hwrte"))
+psych::pairs.panels(attendX, lm=TRUE)
+```
+(Q2a)
+Let's first start with our "kitchen sink" regression model `stndfnl ~ attend + termGPA + priGPA + ACT + hwrte + frosh + soph` with entire data set `attend`. (1) using `linearHypothesis()` to jointly test if `termGPA = priGPA = ACT = 0`, i.e. current and previous GPA/test scores do not affect the final test score, and draw your conclusion for the test; (2) run a automated backward model selection using `step()` function and interpret the coefficient of `attend`. (4 points)
+
+<p style="color:red">
+(1) Since the p-value when testing whether termGPA = 0 is 2.2e-16 < 0.05, we reject the null hypothesis (which is that termGPA = 0). the p-value is statistically significant.<br> 
+Since the p-value when testing whether priGPA = 0 is 0.918 > 0.05, we do not reject the null hypothesis (which is that priGPA = 0). the p-value is statistically insignificant.<br> 
+Since the p-value when testing whether ACT = 0 is 7.942e-08 < 0.05, we reject the null hypothesis (which is that ACT = 0). the p-value is statistically significant.
+when all variables are considered with the null hypothesis of termGPA  + priGPA  + ACT = 0, the p-value is 2.2e-16 < 0.05 and is statistically significant. we reject the null hypothesis.<br> 
+Therefore, termGPA != priGPA != ACT != 0.<br> 
+
+(2) coefficient of attend is -0.02003. attend is the predictor with highest F-statistic.<br> 
+when attend = 0, stndfl =  -2.61479. <br> 
+
+</p>
+
+```{r, q2a1-jointtest, echo=TRUE}
+# type your code here
+lm1 <- lm(stndfnl ~ attend + termGPA + priGPA + ACT + hwrte + frosh + soph, data = `attend`)
+# (1)
+# viewing coefficients
+coef(lm1)
+# building the hypothesis matrix from coefficients
+# testing termGPA first
+hyp1 <- c(0, 0, 1, 0, 0, 0, 0, 0)
+rhs1 <- c(0)
+linearHypothesis(lm1, hyp1, rhs1)
+# testing priGPA
+hyp2 <- c(0, 0, 0, 1, 0, 0, 0, 0)
+rhs2 <- c(0)
+linearHypothesis(lm1, hyp2, rhs2)
+# testing ACT
+hyp3 <- c(0, 0, 0, 0, 1, 0, 0, 0)
+rhs3 <- c(0)
+linearHypothesis(lm1, hyp3, rhs3)
+# testing all together for completeness
+hyp4 <- c(0, 0, 1, 1, 1, 0, 0, 0)
+rhs4 <- c(0)
+linearHypothesis(lm1, hyp4, rhs4)
+
+# (2)
+step(lm1, direction = 'backward')
+# this line is rather buggy sometimes, may result in errors sometimes but none other times
+```
+
+Q2b)
+From the correlation matrix at the very beginning, we can see that many of the independent variables are highly correlated with each other. Let's try to summarize the data using principal component analysis (PCA).
+
+- Use the `prcomp` function to conduct a PCA. (We'll have to feed `attendX`, not `attend`, into `prcomp`)
+- What is the cumulative proportion of variance explained by the first four PCs?
+- Extract the first four PCs and pass them to `attend`. We'll be using these as predictors.
+
+(3 points)
+
+By using `<pca_object>$rotation[,1:3]`, you can see the loadings on the first 3 PCs.
+We will not be attempting to interpret the PCs in this question because it's generally hard to come up with a meaningful interpretation over principal components which are just indices. 
+The only thing to be pointed out, is that PC1 is **negatively** correlated with **every** single variable (to verify if you did it right). Now, Principal Components are just vectors in some high-dimensional space, and so actually it doesn't make sense to tell whether it's a vector pointing right or pointing left, it's just how it is pointing relative to all the other variables. So we can guess, not being trained as an education professional, is that PC1 roughly captures the characteristics of a "lazy" student. (We can thus immediately make a prediction as to the sign of the coefficient if we used PC1 to predict final test score, even before we run Q2c below... Try to guess!)
+
+But in general I would recommend that if you do end up using PCA for your future works, to at least attempt to interpret the PCs, in the spirit of understanding more about the data.
+
+<p style="color:red">
+cumulative proportion of variance explained by the first four PCs: 0.3918 + 0.2331 + 0.1436 + 0.07462 = 0.84312 or 84.3%
+</p>
+
+```{r, q2b-pca, echo=TRUE}
+# type your code here
+pca_attend <- prcomp(~ attend + termGPA + priGPA + ACT + hwrte, data = attendX, center = TRUE, scale = TRUE)
+pca_attend_summary <- summary(pca_attend)
+
+# extracting the 1st 4 PCs
+attend$PC1 = pca_attend$x[,"PC1"]
+attend$PC2 = pca_attend$x[,"PC2"]
+attend$PC3 = pca_attend$x[,"PC3"]
+attend$PC4 = pca_attend$x[,"PC5"]
+```
+
+
+Q2c)
+
+Run a logistic regression of `pass` on the top four principal components. Which coefficients are statistically significant? 
+
+Using a model with all four PCs, use `predict(<glm_object>, type='response')` to ask the model to predict the probability of pass. Let's make our rule to define the predicted value of `pass`: being equal to one (predicted "pass") if the predicted probability is >= 0.60; and zero otherwise (predicted "fail"). Pass the binary predictions to a variable named `pred_pass` in `attend`. How many "Yes" and "No" predictions did the model make? (4 points)
+
+
+
+<p style="color:red">
+The coefficients of PC1, PC2 AND PC4 are statistically significant as seen from their p-values of less than 0.05.<br> 
+Number of "yes" predictions (i.e. the number of passes where pass == 1): 128 <br> 
+Number of "no" predictions (i.e. the number of passes where pass == 0): 546 <br> 
+</p>
+
+```{r, q2c-logitclassifier, echo=TRUE}
+# type your code here
+glm1 <- glm(formula = pass ~ PC1 + PC2 + PC3 + PC4, data = attend, family = binomial)
+summary(glm1)
+pred_prob <- predict(glm1, type = 'response')
+pred_pass <- ifelse(pred_prob >= 0.6, 1, 0)
+attend$pred_pass = pred_pass
+
+attend %>% count(pred_pass == 1)
+```
+
+
+
+Q2d) Finally, let's manually construct a classification matrix using `table()` function in base R rather than `caret::confusionMatrix()`.
+
+Use `table(x1, x2)` with both your model's "Pass/Fail" predictions and the actual observed `pass` values. I recommend using the same convention in the lecture slides, where we have actual values on the columns and model prediction on the rows. *We say "pass" is defined as positive event.* (4 points)
+
+- How many True Positives are there?
+- How many True Negatives are there?
+- How many False Positives are there?
+- How many False Negatives are there?
+
+- What is the model's overall classification accuracy?
+- What is the model's sensitivity?
+- What is the model's precision?
+- What is the model's specificity?
+
+<p style="color:red">
+How many True Positives are there: 402 (TP) <br> 
+How many True Negatives are there: 100 (TN) <br> 
+How many False Positives are there: 144 (FP) <br> 
+How many False Negatives are there: 28 (FN) <br> 
+
+The following are calculated using the formula on lecture 9 slide 40: <br> 
+What is the model's overall classification accuracy: 0.74481 <br> 
+What is the model's sensitivity: 0.93488 <br> 
+What is the model's precision: 0.73626 <br> 
+What is the model's specificity: 0.40984 <br> 
+</p>
+
+
+```{r q2d-ClassificationMatrix, echo=TRUE}
+# type your code here
+table(pred_pass, attend$pass)
+```
+

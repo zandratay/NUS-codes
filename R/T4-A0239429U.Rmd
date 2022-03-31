@@ -1,0 +1,257 @@
+---
+title: "BT1101-Tutorial 4 (Deadline: 4 Mar 9am)"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r load-libraries, echo=TRUE}
+# install required packages if you have not (suggested packages: dplyr, tidyr, rpivotTable, knitr, psych)
+# install.packages("dplyr") #only need to run this code once to install the package
+# load required packages 
+# library("xxxx")
+library("dplyr") #need to call the library before you use the package
+library("tidyr")
+library("rpivotTable")
+library("knitr")
+library("psych")
+library("RColorBrewer")
+library("readxl")
+
+```
+
+### Tutorial 4 Part 2: CardioGood Fitness (To be Submitted; 25 marks)
+Context: Your market research team at AdRight is assigned the task to identify the profile of the typical customer for each treadmill product offered by CardioGood Fitness. Your team decides to investigate whether there are differences across the product lines with respect to customer characteristics. The team decides to collect data on individuals who purchased a treadmill at a CardioGoodFitness retail store during the prior three months. 
+
+The data are stored in the `CardioGoodFitness.csv` file. The team identifies the following customer variables to study: 
+
+- `Product`: product purchased (TM195, TM498, or TM798)
+- `Age`: in years
+- `Gender`: Female or Male
+- `Education`: number of years of education 
+- `MaritalStatus`: Single or Partnered
+- `Usage`: average number of times the customer plans to use the treadmill each week
+- `Fitness`: self-rated fitness on an 1-to-5 scale, where 1 is poor shape and 5 is excellent shape. 
+- `Income`: annual household income ($)
+- `Miles`: average number of miles the customer expects to walk/run each week
+
+You are tasked by your team to help in the tasks below toward creating a better understanding of the customer profile of the CardioGood Fitness treadmill product line.  
+
+```{r q2-read-dataset, echo=T}
+getwd()
+setwd("C:/Users/zandr/OneDrive/Desktop/R")
+d1 <- read.csv("CardioGoodFitness.csv")
+head(d1)
+```
+
+#### Q2.(a) Customer Profile by Product Dashboard (I).
+This dashboard should enable the team to better understand the demographics of the customers for different types of treadmill products. 
+
+- i) Create a table and pie chart to compare the frequency distributions for different product types. 
+- ii) Create a table and chart to compare the frequency distribution of different product types by `Gender` and another table and chart by `Marital Status`.
+- iii) Type your observations from the charts in the space below. 
+Do add the appropriate titles, labels, legend and use different shades of one color as the color palette for each chart. [You are not required to perform outlier analyses for this question part]
+
+[8 marks]
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+```{r Q2a, echo=TRUE}
+##Type your codes here
+# i
+ProductFreq <- d1 %>% count(Product)
+kable(ProductFreq, caption = "Product type Frequency")
+
+slice.product <- ProductFreq$n
+product.piepercent <- 100 * round(ProductFreq$n / sum(ProductFreq$n), 2)
+label <- ProductFreq$Product
+label <- paste(label, ",", sep = " ")
+label <- paste(label, product.piepercent)
+label <- paste(label, "%")
+
+pie(slice.product, labels = label, 
+    col = c("blue", "green", "red", "cyan", "orange", "yellow"),
+    radius = 1,
+    main = "Product type Frequency")
+
+# ii
+# gender
+d1.1 <- d1 %>% 
+  group_by(Gender, Product) %>%
+  tally()
+d1.1spread <- d1.1 %>% spread(key = "Product", value = n)
+kable(d1.1spread, caption = "Contingency table displaying frequency distribution of product types by gender")
+
+# marital status
+d1.2 <- d1 %>% 
+  group_by(MaritalStatus, Product) %>%
+  tally()
+d1.2spread <- d1.2 %>% spread(key = "Product", value = n)
+kable(d1.2spread, caption = "Contingency table displaying frequency distribution of product types by martial status")
+
+# iii
+# observations in the space below
+```
+
+<p style="color:blue">
+
+44% TM195, 22% TM789, 33% TM498
+
+number of TM195 bought by: 40 males, 40 females
+number of TM498 bought by: 31 males, 29 females
+number of TM798 bought by: 33 males, 7 females
+
+number of TM195 bought by: 48 partnered, 32 single
+number of TM498 bought by: 36 partnered, 24 single
+number of TM798 bought by: 23 partnered, 17 single
+
+</p>
+
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+#### Q2.(b) Customer Profile by Product Dashboard (II).
+Next create a second dashboard with the following requirements: 
+
+- i. To be able to view the summary statistics (mean, sd, min, max) for the `Age`, `Education`, `Usage`, `Fitness`, `Income`, and `Miles` of the customers in one table. 
+- ii. To be able to compare the means for `Fitness` and `Usage` across the 3 product types in a table and chart. How would you describe the customer profile for the 3 types of products in terms of fitness and education levels?
+- iii. To be able to compare the means for `Usage` for the 3 product types by Gender in a table and chart. Again provide your interpretation from the chart. 
+
+Do add the appropriate titles and labels for each chart. [You are not required to perform outlier analyses for this question part]
+
+[10 marks]
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+```{r Q2b, echo=TRUE}
+##Type your codes here
+# i 
+d1.a <- d1 %>% select(Age, Education, Usage, Fitness, Income, Miles) 
+describe(d1.a) %>% 
+  select(mean, sd, min, max)
+
+# ii
+#table
+d1.c <- d1 %>% group_by(Product) %>% summarise(IncomeMean = mean(Income), UsageMean = mean(Usage))
+kable(d1.c, caption = "Means of income and usage across all 3 product types")
+
+# chart
+# for income
+par(mar = c(5, 10, 4, 2))
+bar.d1c <- as.matrix(d1.c[, c(2)])
+colours <- c("pink", "plum", "purple")
+barplot(bar.d1c, beside = TRUE, col = colours, main = "Means for Incomes", cex.names = 0.8, las = 1, xlab = "Products", names.arg = c("TM195", "TM498", "TM798"))
+
+# for usage
+bar.d1c <- as.matrix(d1.c[, c(3)])
+colours <- c("pink", "plum", "purple")
+barplot(bar.d1c, beside = TRUE, col = colours, main = "Means for Usage", cex.names = 0.8, las = 1, xlab = "Products", names.arg = c("TM195", "TM498", "TM798"))
+
+# iii
+# To be able to compare the means for `Usage` for the 3 product types by Gender in a table and chart
+# table
+selected <- d1 %>% select(Gender, Usage, Product)
+selected3 <- selected %>% group_by(Gender, Product) %>% summarise(mean = mean(Usage))
+kable(selected3)
+
+# chart
+value <- as.matrix(selected3)
+colours <- c("green", "orange", "blue")
+barplot(selected3$mean, main = "Means of Product Usage by Females (left) and Males (right)", col = colours, beside = TRUE, ylab = "Means", xlab = "Product types grouped by Gender")
+legend("topright", c("TM195", "TM498", "TM798"), cex = 0.7, fill = colours)
+
+```
+<p style="color:blue">
+
+Customers who buy the TM798 are the wealthiest group, followed by the TM498, then TM195.
+Customers tend to use the TM798 most, followed by the TM195, then the TM498.
+
+The trend in usage for females -- in increasing order of usage: TM195, TM498, TM798.
+For males -- in increasing order of usage: TM498, TM196, TM798
+
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+#### Q2.(c) Inspect Customer Income Data 
+
+- i) Conduct an outlier analyses on the `Income` variable. Describe your conclusion from this analyses. 
+- ii) Provide a chart and the appropriate statistic to analyse the linear association between `Income` and `Miles`. Type your interpretation of the results below. 
+
+
+[5 marks]
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+
+```{r Q2c, echo=TRUE}
+##Type your codes here
+# i
+boxplot(d1$Income, range = 3)
+boxplot(d1$Income, range = 1.5)
+
+incom1 <- boxplot(d1$Income, horizontal = TRUE, range = 3)
+incom1$out
+
+incom2 <- boxplot(d1$Income, horizontal = TRUE, range = 1.5)
+incom2$out
+
+# ii 
+plot(d1$Income, d1$Miles, main = "Linear Association between income and miles", xlab = "Income", ylab = "Miles", axes = TRUE)
+cov(d1$Income, d1$Miles)
+```
+
+<p style="color:blue">
+
+there is 1 outlier when range = 3 when plotting boxplots. 
+outliers: 104581
+there are many outliers (19 outliers to be exact) when range = 1.5 when plotting boxplots.
+positive covariance, direct relationship between income and miles.
+
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+#### Q2.(d) Compute Probabilities 
+Provide the following probability computation on the dashboard: 
+
+- i) probability of a customer who has purchased a TM195, has an annual household income more than $62,000
+- ii) probability of a male customer purchasing a TM798 (and not the other treadmills)
+
+Use the dataset to compute these probabilities
+
+[2 marks]
+
+<p style="color:red">**BEGIN: YOUR ANSWER**</p>
+
+```{r Q2d, echo=TRUE}
+##Type your codes here
+#i
+boughtTM195 <- d1 %>% filter(Product == "TM195")
+totalBought <- nrow(boughtTM195)
+incomeOver62000 <- boughtTM195 %>% filter(Income > 62000)
+totalOver62000 <- nrow(incomeOver62000)
+p1 <- totalOver62000 / totalBought
+p1
+
+#ii
+boughtTM986 <- d1 %>% filter(Product == "TM798")
+totalTM798 <- nrow(boughtTM986)
+totalBuys <- nrow(d1)
+p2 <- totalTM798 / totalBuys
+p2
+```
+
+
+<p style="color:blue">
+
+p1 = 0.0375
+p2 = 0.2222222
+
+</p>
+
+<p style="color:red">**END: YOUR ANSWER**</p>
+
+
+
+
+
+

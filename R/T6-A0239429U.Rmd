@@ -1,0 +1,210 @@
+---
+title: 'Tutorial 6: Linear Regression'
+author: 'Tay Xinyu, Zandra. A0239429U'
+date: 'Due by 18/03/2022 8:00 AM'
+output: html_document
+---
+
+## Introduction to R Markdown
+
+In the first half of the course, you were getting familiar with writing R code (in individual `xxx.R` files) and also starting on using RMarkdown for professional-grade text processing with embedded R computations.
+
+In this second half of the course, we will use RMarkdown exclusively to formalize all tutorial assignment submission. Just a very brief recap of RMarkdown below.
+
+You can open R Markdown documents in RStudio as well. You should see a little command called "Knit", which allows you to "knit" the entire R Markdown file into a HTML document, or a PDF document, or a MS Word Document (note that for PDF, Tex distribution is needed; for MS Word, MS Word needs to be installed on your system).
+
+R Markdown is handy because it allows you to embed code and writeup into the same document, and it produces presentable output, so you can use it to generate reports from your homework, and, when you eventually go out to work in a company, for your projects.
+
+Here's how you embed a "chunk" of R code.
+
+```{r example-chunk, echo=TRUE}
+1+1
+```
+
+After the three apostrophes, you'll need `r`, then you can give the chunk a name. Please note that **names have to be single-word and no space is allowed**. Also, names have to be unique, that is, every chunk needs a **different** name. You can give chunks names like:
+
+- `chunk1`
+- `read-in-data`
+- `run-regression`
+
+Or, those that help you with homework:
+
+- `q1a-read-in-data`
+- `q1b-regression`
+
+These names are for you to help organize your code. (In practice it will be very useful when you have files with thousands of lines of code...). After the name of the chunk, you can give it certain options, separated by commas. I will highlight one important option. 
+
+- `echo=TRUE` means the code chunk will be copied into the output file. For homework purposes, **always** set `echo=TRUE` so we know what code you wrote. When you go out to work in a company and you want to produce professional-looking reports, feel free to set it to FALSE.
+
+
+There is a bit more syntax to learn using the R Markdown, but we don't need you to be an expert in R Markdown (although we do expect proficiency in R!). Hopefully, you can copy all the R Markdown syntax you need from the templates we provide. 
+
+
+Note about **working directory** in R Markdown. If you do not specify your working directory via `setwd('...')`, and you hit "Knit", the document will assume that the working directory is the directory that the `.rmd` file is in. Thus, if your rmd is in `XYZ/folder1/code.rmd` and your dataset is `XYZ/folder1/data.csv`, then you can simply run `d0 <- read.csv('data.csv')` without running `setwd()`.
+
+## Submission Instructions
+
+- Select `output: html_document`.
+- I would also recommend you to play with PDF file using pdf_document for your own benefit (LaTex needs to be installed).
+- Include all code chunks, so include `echo=TRUE` in all chunks.
+- Replace the placeholder text, "Type your answer here.", with your own.
+- Submit *only* the required question for grading (Part 2: Submission). You can delete everything else for that submission. Remember to include any `library('package_name')` statements that you'll need to run your code and future reproduction. 
+- Rename your R Markdown file `T[X]_[MatricNumber].rmd`, and the output will automatically be `T[X]_[MatricNumber].html`. 
+    - for example, `T6_12345.html`
+    - X is the Tutorial number at the top of this file. For example, Linear Regression is "T6".
+- Submit your both R Markdown file (.rmd) and HTML (.html) to Luminus for tutorial assignments (upload to Luminus under the correct Submission Folder). We shall do the same for practical exam.
+- **It is important to be able to code and produce your Rmarkdown output file *independently*.** Keep in mind that you are responsible for de-bugging and programming in the final exam.
+
+## Preparation
+
+```{r load-libraries, echo=TRUE}
+# load required packages
+library("dplyr")
+library("readxl")
+library("psych")
+library("tidyverse")
+library("broom")
+```
+
+
+## Part Two: Assignment Submission 
+
+### Question 3 (Total 15 points)
+
+- Dataset required: `data('recid')`
+
+Recidivism rate in Singapore is 24% in 2016 (https://data.gov.sg/dataset/recidivism-rate). Criminals tend to relapse into criminal offense after the release from the prison. Recidivism is costly and causes serious social and economical problem. It is not only wasteful with the resources invested in prison, including staffing, infrastructure investment, daily operation cost, and economic opportunity cost for both prisoners and staffs (i.e., labor values that could be generated elsewhere other than being locked up and guarding in prison, respectively), but also harms the community for the second time due to crime recommitment. Recidivism is thus a critical evaluating metric for prison performance, e.g., rehabilitation or training program. `recid.csv` contains 1445 observations of recidivism cases in United States where it currently has the largest prison population in the world (about one out every five peope imprisoned in the world is incarcerated in the United States).
+
+```{r q3-data-input, echo=TRUE}
+getwd()
+setwd("C:/Users/zandr/OneDrive/Desktop/R")
+rec <- read.csv(file = 'recid.csv', header= TRUE)
+```
+
+C.-F. Chung, P. Schmidt, and A.D. Witte (1991), “Survival Analysis: A Survey,” Journal of Quantitative Criminology 7, 59-98.
+Data Source: https://www.cengage.com/cgi-wadsworth/course_products_wp.pl?fid=M20b&product_isbn_issn=9781111531041. A quick description of the data:
+
+Obs:  1445
+
+  1. black                    =1 if black
+  2. alcohol                  =1 if alcohol problems
+  3. drugs                    =1 if drug history
+  4. super                    =1 if release supervised
+  5. married                  =1 if married when incarc.
+  6. felon                    =1 if felony sentence
+  7. workprg                  =1 if in N.C. pris. work prg.
+  8. property                 =1 if property crime
+  9. person                   =1 if crime against person
+ 10. priors                   # prior convictions
+ 11. educ                     years of schooling
+ 12. rules                    # rules violations in prison
+ 13. age                      in months
+ 14. tserved                  time served, rounded to months
+ 15. follow                   length follow period, months
+ 16. durat                    max(time until return, follow) in month
+ 17. cens                     =1 if duration right censored
+ 18. ldurat                   log(durat)
+ 
+(3a) Based on previous experience, prison staffs suggest that the recidivism period `durat` (duration between release and follow-up offense) is related with the length of time served in the prison `tserved`. If we are interested to explain recidivism, which is the dependent (or outcome) variable? Before jumping into the numbers, visualize the relationship between the variables of interest with a scatterplot. (2 point) 
+
+<p style="color:red">
+dependent: durat
+independent: tserved
+There seems to be no clear relationship between tserved and durat. When tserved = 0 to 50, there is a cluster of durat values from 70 to 80. Apart from this cluster, as tserved increased, durat generally increases too (positive relationship).
+</p>
+```{r q3a, echo=TRUE}
+plot(x = rec$tserved, y = rec$durat, xlab = "Length of time served in prison", ylab = "Duration between release and follow-up offence")
+```
+
+
+(3b) Run a simple linear regression model between `durat` and `tserved` and interpret the coefficient before `tserved`. (2 points) Is the coefficient statistically significant? (1 point)
+
+Remark: the intercept is by default included in the regression model for this module, unless otherwise specified.
+
+<p style="color:red">
+The mean value of durat when tserved = 0 is 60.23062.
+On average, a one-unit increase in tserved results in 0.25327 unit decrease in durat, ceteris paribus.
+Multiple R-squared:  0.03783, which means that the data provided does not fit the linear model well. This is supported by the F-statistic of 56.74, which tells us the same.
+We note that the p-value is very small, less than 0.05, thus we can reject the null hypothesis that this slope beta1 = 0, i.e., beta1 is statistically significantly different from zero.
+</p>
+```{r q3b, echo=TRUE}
+linemodel2 <- lm(durat~tserved, data = rec)
+summary(linemodel2)
+```
+
+
+
+
+(3c) In addition to prison serving time `tserved`, few other variables are suggested to predict the recidivism by prison staff, including previous drug use `drugs`, alcohol abuse `alcohol`, number of prior convictions `priors` and attendance of prison training program `workprg`. If we are to have a multivariate linear regression model to explain `durat` with all the mentioned variables, please write down explicitly the population linear regression model below. If you use $Y$, and $X_1$, $X_2$, etc., clearly define or label your notations, e.g., $X_1 = ?$ (2 points)
+
+<p style="color:red">
+
+Y <- rec$durat
+X1 <- rec$drugs
+X2 <- rec$alcohol
+X3 <- rec$priors
+X4 <- rec$workprg
+X5 <- rec$tserved
+
+</p>
+
+
+(3d) Prison staff are evaluating the effectiveness of the working program. Run a multivariate linear regression: `durat ~ tserved + drugs + alcohol + priors + workprg`. Interpret the meaning of coefficient before `workprg` and discuss if prison working program should be retained from your observation to the regression result and why? (3 points)
+
+<p style="color:red">
+On average, a one-unit increase of workprg results in a 2.32777 unit increase in durat (which is measured in months), ceteris paribus. Since an increased in the prison training programme led to an increase in the duration between release and follow-up offense, then yes, the prison working programme should be retained. This lowers the risk of recidivism.
+For completeness, we note that the t-value is very large, and the p-value is very small, less than 0.05, thus we can reject the null hypothesis that this slope beta1 = 0, i.e., beta1 is statistically significantly different from zero.
+</p>
+```{r q3d, echo=TRUE}
+# summary(lm(Y~X1+X2+X3+X4+X5, data = rec)). this line is equivalent to the line below. but i commented it out as the R could not knit and said that object 'Y' was not found despite it being present in my environment already
+summary(lm(durat~drugs+alcohol+priors+workprg+tserved, data = rec))
+```
+
+
+
+
+(3e) The warden of prison decided to terminate the working program. Do you agree with his/her decision? Why or why not? (3 points)
+
+Hint: One of most effective way to be critical is to check the assumptions used to reach the conclusion and decision.
+
+<p style="color:red">
+In the 1st graph: horizontal red line seen --> indication of a linear relationship between durat and workprog
+In the 2nd graph: residuals do not follow the straight line on the qq plot --> data is not normally distributed
+In the 3rd graph: line shown is horizontal and roughly equally spread points --> good indication of homoscedasticity
+In the 4th graph: no outliers observed
+since the assumption of normality is violated, I do not agree with the prison warden as their conclusion may be incorrect.
+</p>
+```{r q3e, echo=TRUE}
+# building regression model
+model <- lm(durat~workprg, data = rec)
+summary(model)
+# plotting scatterplot
+plot(x = rec$workprg, y = rec$durat, xlab = "Work programme", ylab = "duration between release and follow up offence")
+# plot model results
+plot(model)
+# in the 1st graph: horizontal red line seen --> indication of a linear relationship between durat and workprog
+# in the 2nd graph: residuals do not follow the straight line on the qq plot --> data is not normally distributed
+# in the 3rd graph: line shown is horizontal and roughly equally spread points --> good indication of homoskedasity
+# in the 4th graph: no outliers observed
+```
+
+
+
+(3f) Offenders after prison release usually are under state supervised parole program and assessment for the length of the follow period, `follow`, is crucial since it is costly. Given five variables in `recid` data set: `follow`, `rules`, `age`, `tserved`, and `married`, how could you help the staffs to predict the outcome of a recent case given that a 32-year old married offender has been serving the jail time for 3 years and 7 months and during which broken no rule in the prison? Run a proper model with those 5 variables and predict the length of follow period. (2 point)
+
+
+<p style="color:red">
+When the values of all the independent variables (rules, age, married, tserved) are 0, the length of the follow period is 75.2931283 months.
+As the number of rules broken increased by 1 unit, on average, the follow period decreased by 0.0105238, ceteris paribus.
+As the age increased by 1 unit, on average, the follow period decreased by 0.0006040, ceteris paribus.
+As the duration of time served increased by 1 unit, on average, the follow period decreased by 0.0060650, ceteris paribus.
+On average, when the inmate is married, there is a decrease in the follow period by 0.2735213, ceteris paribus.
+Thus the predicted "follow" period is 74.52686 months for the above mentioned case.
+
+</p>
+
+```{r q3f, echo=TRUE}
+model2 <- lm(follow~rules+age+tserved+married, data = rec)
+summary(model2)
+predict(model2, data.frame(rules = 0, age = 32*12, tserved = 7 + 3*12, married = 1))
+```

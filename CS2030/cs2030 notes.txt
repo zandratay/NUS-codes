@@ -1,0 +1,10 @@
+private static final double EPSILON = 1e-15
+// this is the threshold of tolerance
+if (Math.abs(double1- double2) <= EPSILON)
+// when dealing with floating point numbers, we are dealing more with this approximation
+
+- cannot have magic number 
+- instead, declare: private static final int smth_meaningful = 60;
+// static --> no matter how many instances of this object, it will refer to this particular variable
+- for this, must name it as such: MAX_NUM_SECS --> all caps, separated by underscores
+ 

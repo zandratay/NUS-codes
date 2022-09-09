@@ -1,0 +1,27 @@
+class Holiday {
+    final string name, month;
+    final int date;
+    Holiday(string name, int date, string month) {
+        this.name = name;
+        this.date = date;
+        this.month = month;
+    }
+}
+
+boolean inSameMonth(Holiday h1, Holiday h2) {
+    if (h1.month.equals(h2.month)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+public class holiday {
+public static void main(String[] args) {
+    Holiday qnHoliday = new Holiday('Independence Day', 4, 'July');
+    Holiday secondHoliday = new Holiday('Custom Holiday', 4, 'Novemeber');
+    System.out.println(qnHoliday.name + ":" + qnHoliday.date + " " + qnHoliday.month);
+    System.out.println(Holiday.inSameMonth(qnHoliday, secondHoliday);
+}
+}
+

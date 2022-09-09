@@ -1,0 +1,32 @@
+lecture 5 notes
+
+- for imlist<Shape> -- can take in list of square, circle, rectangle etc
+but must use UPPER BOUNDED WILDCARD
+i.e. substituable for shapes and below
+- use extends
+e.g. addAll(ImList<? extends E> list)
+--> potentially a state changing method
+--> this function can be created by delegation
+now can create an ImList of Shapes, and addAll ImList of squares. but not Strings (objects)
+
+ImList is not a List! 
+e.g. add method supposed to return a boolean, but ours does not. so not a list.
+
+Comparator is an interface that specifies that u need to implement a method called compare()
+if int1 is earlier than int2, must return a negative integer
+is same, return 0
+else return positive integer
+
+ints.sort(new IntComp(), List.of(1, 2, 4, 3))
+--> sort() is a method takes in the Comparator and the list
+--> this method is mutable though!
+
+if wanting to sort Shapes;
+can use Area Comparator, but not radius comparator (too specific)
+--> so we can only sort based on Shape class and above
+
+sort --> anything and above --> lower bounded wildcard.
+
+
+
+

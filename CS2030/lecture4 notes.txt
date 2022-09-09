@@ -1,0 +1,52 @@
+Interface — no properties and no o methods defined, but there are methods specified. No method body in the interface 
+
+Any method that u specify in the shape interface is implicitly public. 
+
+The access of the child class that implements the interface method, cannot be more private than in the interface 
+Accessibility modifier cannot be more restrictive than the parent. 
+Hence, the method in the child class must be tagged with public!! 
+
+An interface is abstract, cannot be instantiated. E.g. shape()
+
+but can create list of shapes
+e.g. List<Shape> shapes = List.of(new Circle(smth), new Rectangle(smth))...
+
+All methods in child classes specified in the interface must have @override tag
+
+Child can have multiple interfaces 
+
+Return type of scalable is scalable. 
+But in child class, return type can be it’s children e.g. circle. Bcos circle is a scalable. But return type cannot be more general than the parent 
+(When gg from parent to child, making it more specific) 
+E.g. object is more general than scalable 
+
+Now I can have 
+Shape shape = new Circle(1.0)
+Scalable scalable = new Circle(1.0)
+
+Compile time type tells u what u can and cannot do. Scalable as compile time type alr tells u that cannot do getArea() so there will be an error 
+
+Child can do more than parent
+
+cant instatiate abstract class too
+
+smth more general will be substitutable by smth more specific
+
+
+open closed principle (they use this to test our code...)
+- client doesnt need to change
+- just need to extend
+
+
+dependecy inversion 
+client dont rely directly on interface, there is a contract involved.
+
+an interfaace can extend from another interface.
+e.g. list extends from Collection.
+
+interfcce can extend multiple interfaces. e.g. interface c extends A, B {}
+
+
+e.g. list, set and queue all extends from Collections.
+in the above 3, they all have the size() method, meaning that size() was specified in the Collections interface.
+

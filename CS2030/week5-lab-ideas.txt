@@ -1,0 +1,64 @@
+comparator
+
+if (c1.leaveTime() == c2.arrivalTime()) {
+	return 1;
+} else {
+	// if c1 come first, must return positive
+	return c2.arrivalTime() - c1.arrivalTime();
+}
+
+pq
+
+(main input loop)
+customer c1
+Arrive a1
+
+pq = pq.add(a1) // add all arrive types
+
+(exit loop)
+
+(while !pq.isEmpty())
+Pair<Arrive, PQ<Arrive>> pair = pq.poll()
+Arrive polledEvent = pair.first()
+PQ<Arrive> remainingPQ = pair.second()
+
+if (polledEvent.nextEvent() == serve) {
+
+
+comments
+each customer has:
+- arriveTime()
+- finalTime()
+
+customer c1
+Arrive a1 = Arrive(c1, s1)
+
+pq is of type <Event>
+
+pq = pq.add(a1)
+
+if (a1.nextEvent() == Served) {
+	pq = pq.add(new Served(c1, s1))
+	pq = pq.add(new Done(c1, s1))
+} else { // next event is leave
+	pq = pq.add(new Leave(c1, s1))
+}
+
+while (pq is not empty) 
+
+
+comments 2
+
+if c2.arriveTime() < c1.leaveTime() {
+print(c1 arrive)
+print(c1 served)
+print(c2 arrive)
+print(c2 left)
+print(c1 done) 
+else {
+print(c1 arrive
+	c1 served
+	c1 done
+print(c2 arrive 
+...
+
